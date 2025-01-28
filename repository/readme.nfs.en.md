@@ -81,6 +81,7 @@ Step 2. Run Server Manager and Click [File and Storage Services].
 [12]	After finishing creating, Click [Close] button.
 
 [13]	NFS shared folder has been just configured.
+
 --
 ## 1.3. NFS Server : Install NFS Client:
 *Install NFS Client.
