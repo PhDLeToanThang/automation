@@ -99,7 +99,7 @@ Success Restart Needed Exit Code      Feature Result
 True    No             Success        {Client for NFS}
 ```
 --
-1.4. NFS Server : Install NFS Client (GUI)
+## 1.4. NFS Server : Install NFS Client (GUI)
 *On GUI Installation, Set like follows.
 
 [2]	Run Server Manager and Click [Add roles and features].
@@ -253,8 +253,8 @@ PS C:\Users\Serverworld> icacls C:\nfsshare01\winuser01 /setowner winuser01
 processed file: C:\nfsshare01\winuser01
 Successfully processed 1 files; Failed processing 0 files
 ```
-
-## Linux NFS server
+--
+## 1.7. Linux NFS server
 * winuser02 ⇔ redhat can access
 
 ```ts
