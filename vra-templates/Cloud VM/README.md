@@ -1,0 +1,2 @@
+An example of a complex template for a virtual machine ordering service with many inputs and operations on them.
+The VM is connected to the production network and the management network, and is included in the NSX security group.
