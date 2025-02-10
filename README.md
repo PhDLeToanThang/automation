@@ -4,3 +4,6 @@
 # 2. Repository:
 *NFS 4, SMB, CIFS, Ceph, S3C, S3D for GitEA (Git On-prem for DevSecOps)*
 
+```
+cd c:\
+```
