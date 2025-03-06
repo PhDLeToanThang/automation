@@ -53,3 +53,78 @@ https://www.google.com/search?q=how+to+setup+step+by+step+and+deploy+and+configu
 Manual Deployment:
 https://docs.ceph.com/en/reef/install/manual-deployment/
 
+-----
+11:50 am
+
+Miêu tả chi tiết các bước cài , triển khai và cấu hìnhCeph đầy đủ với giao thức NFS 4.0 , Ceph admin trên nền Debian 12 bằng dòng lệnh
+
+
+Để cài đặt, triển khai và cấu hình Ceph với giao thức NFS 4.0 và Ceph admin trên hệ điều hành Debian 12 bằng dòng lệnh, bạn cần thực hiện các bước sau:
+
+Bước 1: Cài đặt Ceph trên Debian 12:
+Cài đặt Ceph trên Debian 12 bằng dòng lệnh:
+bash
+
+Copy
+sudo apt update
+sudo apt install ceph
+Cấu hình Ceph Cluster:
+bash
+
+Copy
+ceph-deploy new {MONITOR_NODE}
+ceph-deploy install {MONITOR_NODE}
+ceph-deploy mon create-initial
+Cài đặt và khởi động các OSD (Object Storage Daemon):
+bash
+
+Copy
+ceph-deploy osd prepare {OSD_NODE}:/dev/sdX
+ceph-deploy osd activate {OSD_NODE}:/dev/sdX
+Bước 2: Cấu hình Ceph với NFS 4.0:
+Cài đặt NFS-Ganesha trên Ceph Monitor node:
+bash
+
+Copy
+sudo apt install nfs-ganesha
+Cấu hình NFS-Ganesha với Ceph:
+bash
+
+Copy
+sudo nano /etc/ganesha/ganesha.conf
+Thêm cấu hình sau vào tệp cấu hình:
+
+ini
+
+Copy
+EXPORT {
+    Export_Id = 1;
+    Path = /path/to/ceph/fs;
+    Pseudo = /cephfs;
+    Access_type = RW;
+    Squash = no_root_squash;
+    FSAL {
+        Name = CEPH;
+    }
+}
+Bước 3: Cấu hình Ceph admin trên Debian 12:
+Tạo user Ceph admin:
+bash
+
+Copy
+sudo ceph-authtool --create-keyring /etc/ceph/ceph.client.admin.keyring
+sudo chmod +r /etc/ceph/ceph.client.admin.keyring
+sudo ceph-authtool --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow' /etc/ceph/ceph.client.admin.keyring
+sudo ceph auth add client.admin -i /etc/ceph/ceph.client.admin.keyring
+Thiết lập biến môi trường để sử dụng Ceph admin:
+bash
+
+Copy
+export CEPH_CONF=/etc/ceph/ceph.conf
+export CEPH_CLIENT_KEYRING=/etc/ceph/ceph.client.admin.keyring
+Kiểm tra kết nối với Ceph Cluster:
+bash
+
+Copy
+ceph -s
+Sau khi hoàn thành các bước trên, bạn đã cài đặt, triển khai và cấu hình Ceph với giao thức NFS 4.0 và cấu hình Ceph admin trên Debian 12 bằng dòng lệnh thành công. Đảm bảo rằng bạn tuân thủ các hướng dẫn cụ thể và kiểm tra kỹ lưỡng trước khi triển khai trong môi trường sản xuất.
