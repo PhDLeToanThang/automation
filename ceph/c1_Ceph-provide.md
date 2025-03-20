@@ -57,3 +57,7 @@ https://www.peerspot.com/products/comparisons/minio_vs_red-hat-ceph-storage
 2. https://blog.devopsviet.com/2020/03/15/ceph-phan-3-kien-truc-ceph/
 
 3. https://github.com/lacoski/khoa-luan
+
+4. https://www.howtoforge.com/tutorial/using-ceph-as-block-device-on-centos-7/ 
+
+5. https://github.com/tigerlinux/tigerlinux-extra-recipes/tree/master/recipes/misc/ceph-owncloud-lab

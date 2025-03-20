@@ -2,12 +2,12 @@
 ---
 ## Chuẩn bị
 ### Sơ đồ
-![](PIC/ceph-lab-jewel-nextcloud-struc.PNG)
+![](img/ceph-lab-jewel-nextcloud-struc.PNG)
 ### Về tài nguyên
 
 __Chuẩn bị 4 node, chạy CentOS 7 với cấu hình__
 
-![](PIC/ceph-lab-jewel-nextcloud-sodo.PNG)
+![](img/ceph-lab-jewel-nextcloud-sodo.PNG)
 
 ## Bắt đầu
 

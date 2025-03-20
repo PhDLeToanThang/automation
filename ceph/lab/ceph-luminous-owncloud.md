@@ -2,9 +2,9 @@
 ---
 ## Chuẩn bị
 ### Sơ đồ
-![](PIC/ceph-lab-luminous-nextcloud-sodo.PNG)
+![](img/ceph-lab-luminous-nextcloud-sodo.PNG)
 ### Về tài nguyên
-![](PIC/ceph-lab-luminous-nextcloud-tn.PNG)
+![](img/ceph-lab-luminous-nextcloud-tn.PNG)
 __Chuẩn bị 4 node, chạy CentOS 7 với cấu hình__
 
 ## Bắt đầu
@@ -183,7 +183,7 @@ __Kiểm tra thông tin user s3 vừa tạo__
 > Secret key: APyIJpxRci3ETojXWz4fEIOiJMMMifYftFRK0JUM
 
 __Cấu hình tích hợp Ceph-S3 với Owncloud__
-![](PIC/ceph-lab-luminous-nextcloud-1.PNG)
+![](img/ceph-lab-luminous-nextcloud-1.PNG)
 
 ## Mở rộng
 
