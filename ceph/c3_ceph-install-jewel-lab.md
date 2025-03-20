@@ -1,14 +1,14 @@
-# Cài đặt Ceph Storage Cluster trên CentOS 7 (Ceph jewel)
+# Cài đặt Ceph Storage Cluster 3 Node Jewel - CentOS 7
 ---
-## Tổng quan
-[Tổng quan về Ceph](tong-quan-ceph.md)
-
 ## Chuẩn bị
+
 ### Sơ đồ
-![](PIC/ceph-in-lab-sodo.png)
+![](img/ceph-3node-lab-0.png)
 ### Về tài nguyên
-__Yêu cầu sử dụng 5 node, tất cả cài đặt CentOS__
-![](PIC/ceph-use-lab-sodotn.png)
+
+__Yêu cầu sử dụng 3 node, tất cả cài đặt CentOS 7__
+
+![](img/ceph-lab-jewel-3node-sodo.PNG)
 
 ## Cài đặt
 ### Phần 1 - Cấu hình chuẩn bị trên tất cả các node
@@ -47,7 +47,6 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 ```
 
 #### Bước 5: Cấu hình Host File
-
 Cấu hình trên tất cả các node
 ```
 vim /etc/hosts
@@ -55,30 +54,20 @@ vim /etc/hosts
 Nội dung
 ```
 # content vim
-192.168.2.128 ceph-admin
-192.168.2.129 mon1
-192.168.2.130 osd1
-192.168.2.131 osd2
-192.168.2.132 client
-```
+192.168.2.133 ceph-admin
 
-Cấu hình hostname trên các node theo tên riêng
-```
-hostnamectl set-hostname <Tên node tương ứng>
+192.168.2.134 ceph-node-1
 
-# VD
-hostnamectl set-hostname ceph-admin
-hostnamectl set-hostname mon1
-...
+192.168.2.135 ceph-node-2
 ```
 > Ping thử tới các host, kiếm tra Network
 
-> VD: ping -c 3 mon1
+> VD: ping -c ceph-node-1
 
 ### Phần 2: Cấu hình SSH Server
 > __Cấu hình trên ceph-admin node__
 
-Sẽ sử dụng admin node để cấu hình các node monitor và osd.
+Sẽ sử dụng admin node để cấu hình các node còn lại.
 
 #### Bước 1: Truy cập ceph-admin
 ```
@@ -100,28 +89,19 @@ vim ~/.ssh/config
 Nội dung
 ```
 # content vim
+
 Host ceph-admin
         Hostname ceph-admin
         User cephuser
 
-Host mon1
-        Hostname mon1
+Host ceph-node-1
+        Hostname ceph-node-1
         User cephuser
 
-Host osd1
-        Hostname osd1
-        User cephuser
-
-Host osd2
-        Hostname osd2
-        User cephuser
-
-Host client
-        Hostname client
+Host ceph-node-2
+        Hostname ceph-node-2
         User cephuser
 ```
-![](PIC/ceph-in-lab-1.png)
-
 Thay đổi quyền trên file
 ```
 chmod 644 ~/.ssh/config
@@ -129,17 +109,12 @@ chmod 644 ~/.ssh/config
 
 Chuyển ssh-key tới các node còn lại
 ```
-ssh-keyscan osd1 osd2 client mon1 >> ~/.ssh/known_hosts
-ssh-copy-id osd1
-ssh-copy-id osd2
-ssh-copy-id mon1
-ssh-copy-id client
+ssh-keyscan ceph-admin ceph-node-1 ceph-node-2 >> ~/.ssh/known_hosts
+ssh-copy-id ceph-admin
+ssh-copy-id ceph-node-1
+ssh-copy-id ceph-node-2
 ```
-
-
 > Yều cầu nhập passwd trong lần đầu tiền truy cập
-
-![](PIC/ceph-in-lab-2.png)
 
 ### Phần 3: Cấu hình Firewalld
 #### Tùy chọn 1: Cấu hình dựa theo lab
@@ -148,71 +123,12 @@ Trong lab ta sẽ bỏ qua cấu hình firewalld (cấu hình trên tất cả c
 systemctl stop firewalld
 systemctl disable firewalld
 ```
+
 #### Tùy chọn 2: Cấu hình firewalld (Chưa kiểm chứng)
-##### Bước 1: Cấu hình firewalld trên ceph-admin
-Kiểm tra firwalld
-```
-ssh root@ceph-admin
+##### Xem thêm
+[Cài đặt Ceph trên CentOS 7](ceph-install-lab.md)
 
-systemctl start firewalld
-systemctl enable firewalld
-```
-Mở port 80, 2003, 4505-4506
-```
-sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
-sudo firewall-cmd --zone=public --add-port=2003/tcp --permanent
-sudo firewall-cmd --zone=public --add-port=4505-4506/tcp --permanent
-sudo firewall-cmd --reload
-```
-
-##### Bước 2: Cấu hình firewalld trên ceph monitor (mon1)
-Kiểm tra firwalld
-```
-ssh root@mon1
-
-systemctl start firewalld
-systemctl enable firewalld
-```
-Mở port sau trên Ceph monitor
-```
-sudo firewall-cmd --zone=public --add-port=6789/tcp --permanent
-sudo firewall-cmd --reload
-```
-
-##### Bước 3: Cấu hình trên node osd 1 - 2
-Mở port 6800-7300 trên mỗi port osd node: osd1, osd2
-
-```
-ssh osd1    # ssd osd2
-
-sudo systemctl start firewalld
-sudo systemctl enable firewalld
-sudo firewall-cmd --zone=public --add-port=6800-7300/tcp --permanent
-sudo firewall-cmd --reload
-```
-
-### Phần 4: Cấu hình Ceph OSD
-Theo cấu hình thiết lập cơ bản, 2 Ceph OSD sẽ gồm 2 disk:
-- /dev/sda = root partition.
-- /dev/sdb = 20GB dựa theo lab.
-Ta sẽ sử dụng /dev/sdb để cấu hình Ceph disk
-
-#### Thực hiện trên từng node osd (osd 1, osd 2)
-Kiểm tra thông tin disk
-```
-sudo fdisk -l /dev/sdb
-```
-Đinh dạng XFS FS với GPT partition thông qua command
-```
-sudo parted -s /dev/sdb mklabel gpt mkpart primary xfs 0% 100%
-sudo mkfs.xfs /dev/sdb -f
-```
-Kiểm tra lại partition vừa định dạng
-```
-sudo blkid -o value -s TYPE /dev/sdb
-```
-
-### Phần 5: Thiết lập Ceph Cluster
+### Phần 4: Thiết lập Ceph Cluster
 Tại phân này, ta sẽ cài đặt tât cả các Ceph node thông qua ceph-admin node.
 
 #### Bước 1: Truy cập ceph-admin node
@@ -234,11 +150,10 @@ mkdir cluster
 cd cluster/
 ```
 
-Tạo mới cluster config với 'ceph-deploy' command, thiết lập monitor node = 'mon1'
+Tạo mới cluster config với 'ceph-deploy' command, thiết lập monitor node = 'ceph-admin'
 ```
-ceph-deploy new mon1
+ceph-deploy new ceph-admin
 ```
-![](PIC/ceph-in-lab-3.png)
 
 Cấu hình ceph.conf
 ```
@@ -246,15 +161,40 @@ vim ceph.conf
 ```
 Nội dung
 ```
-# Add thêm (vim)
-public network = 192.168.2.0/24
+# Content vim (Sửa lại theo lab)
+[global]
+fsid = 60643eb6-a568-42ae-b665-114807627e09
+auth_cluster_required = cephx
+auth_service_required = cephx
+auth_client_required = cephx
 osd pool default size = 2
+
+# Cấu hình Network
+public network = 192.168.2.0/24
+cluster network = 192.168.3.0/24
+
+# Cấu hình monitor node
+[mon]
+mon host = ceph-admin, ceph-node-1, ceph-node-2
+mon initial members = ceph-admin, ceph-node-1, ceph-node-2
+
+[mon.ceph-admin]
+host = ceph-admin
+mon addr = 192.168.2.133
+
+[mon.ceph-node-1]
+host = ceph-node-1
+mon addr = 192.168.2.134
+
+[mon.ceph-node-2]
+host = ceph-node-2
+mon addr = 192.168.2.135
 ```
 
 #### Bước 4: Cài đặt Ceph tới tất cả các node
 Cài đặt Ceph tới tất cả các node từ ceph-admin node.
 ```
-ceph-deploy install ceph-admin mon1 osd1 osd2
+ceph-deploy install ceph-admin ceph-node-1 ceph-node-2
 ```
 > cmd sẽ tự động cài đặt ceph tới tất cả các node: mon1, osd1-2 và ceph-amdin
 
@@ -263,45 +203,36 @@ Thiết lập ceph-mon tới mon1 node
 ceph-deploy mon create-initial
 ```
 
-Tạo monitor key, kiểm tra thiết lập key
-```
-ceph-deploy gatherkeys mon1
-```
-![](PIC/ceph-in-lab-4.png)
-
 #### Bước 5: Thêm OSD tới Cluster
 Sau khi Ceph được cài đặt tới các node, ta cần thêm tiến trình OSD tới cluster. Các tiến trình OSD sẽ tạo data, journal partition trên disk /dev/sdb.
 ```
-ceph-deploy disk list osd1 osd2
+ceph-deploy disk list ceph-node-1 ceph-node-2
 ```
-![](PIC/ceph-in-lab-5.png)
 
-> Nhận thấy /dev/sdb đang ở dạng XFS format
+![](img/ceph-3node-lab-1.png)
 
 Xóa /dev/sdb partition tables trên tất cả node với zap option
 ```
-ceph-deploy disk zap osd1:/dev/sdb osd2:/dev/sdb
+ceph-deploy disk zap ceph-node-1:/dev/sdb
+ceph-deploy disk zap ceph-node-2:/dev/sdb
 ```
 > cmd trên sẽ xóa toàn bộ data trên /dev/sdb tại Ceph OSD node
 
+![](img/ceph-3node-lab-2.png)
+
 Thiết lập OSD node
 ```
-ceph-deploy osd prepare osd1:/dev/sdb osd2:/dev/sdb
+ceph-deploy osd prepare ceph-node-1:/dev/sdb ceph-node-2:/dev/sdb
 ```
 
-Nếu thành công
-![](PIC/ceph-in-lab-6.png)
+![](img/ceph-3node-lab-3.png)
 
 Kích hoạt OSD
 ```
-ceph-deploy osd activate osd1:/dev/sdb1 osd2:/dev/sdb1
+ceph-deploy osd activate ceph-node-1:/dev/sdb1 ceph-node-2:/dev/sdb1
 ```
 
-Kiểm tra sau khi thiêt lập
-```
-ceph-deploy disk list osd1 osd2
-```
-![](PIC/ceph-in-lab-7.png)
+![](img/ceph-3node-lab-4.png)
 
 Theo kết quả, /dev/sdb sẽ có 2 phân vùng
 - /dev/sdb1 - Ceph Data
@@ -311,12 +242,14 @@ Kiểm tra tại OSD node
 ```
 fdisk -l /dev/sdb
 ```
-![](PIC/ceph-in-lab-8.png)
+
+![](img/ceph-3node-lab-5.png)
 
 Thiết lập management-key liên kết các node
 ```
-ceph-deploy admin ceph-admin mon1 osd1 osd2
+ceph-deploy admin ceph-admin ceph-node-1 ceph-node-2
 ```
+
 Thiết lập quyền truy cập file trên tất cả các node
 ```
 sudo chmod 644 /etc/ceph/ceph.client.admin.keyring
@@ -325,11 +258,12 @@ sudo chmod 644 /etc/ceph/ceph.client.admin.keyring
 > Sau bước trên thiết lập Ceph Cluster hoàn tất
 
 ### Phần 6: Kiểm tra Ceph setup
-#### Bước 1: Kiểm tra tại Ceph monitor node
-Truy cập ceph monitor node
+#### Kiểm tra tại 1 trong các Ceph monitor node
+Truy cập 1 trong các ceph monitor
 ```
-ssh root@mon1
+ssh root@ceph-admin
 ```
+
 Kiểm tra cluster health
 ```
 sudo ceph health
@@ -338,13 +272,8 @@ Kiểm tra cluster status
 ```
 sudo ceph -s
 ```
-![](PIC/ceph-in-lab-9.png)
 
-> Có thể thây thông tin cơ bản health = OK
+![](img/ceph-3node-lab-6.png)
 
-> Ceph monitor IP = 192.168.2.129:6789
-
-> Có 2 OSD server, và có thể sử dụng 30gb dung lượng trên cluster
-
-## Nguồn
-https://www.howtoforge.com/tutorial/how-to-build-a-ceph-cluster-on-centos-7/
+#### Tại node khác (__ceph-node-1__)
+![](img/ceph-3node-lab-7.png)

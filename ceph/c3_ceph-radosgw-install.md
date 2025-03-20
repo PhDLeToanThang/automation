@@ -2,10 +2,10 @@
 ---
 ## Chuẩn bị
 ### Sơ đồ
-![](PIC/ceph-radosgw-install-sodo.png)
+![](img/ceph-radosgw-install-sodo.png)
 ### Tài nguyên
 __Yều cầu 3 node chạy ceph, 1 node giả lập app sử dụng s3 API__
-![](PIC/ceph-radosgw-install-struc.png)
+![](img/ceph-radosgw-install-struc.png)
 > Tất cả chạy CentOS 7
 
 ## Cài đặt

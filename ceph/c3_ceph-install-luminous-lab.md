@@ -3,11 +3,11 @@
 ## Chuẩn bị
 
 ### Sơ đồ
-![](PIC/ceph-lumi-lab-7.png)
+![](img/ceph-lumi-lab-7.png)
 
 ### Về tài nguyên
 
-![](PIC/ceph-lumi-lab-sodo.png)
+![](img/ceph-lumi-lab-sodo.png)
 
 ## Cài đặt
 ### Phần 1 - Chuẩn bị môi trường
@@ -222,14 +222,14 @@ yum update ceph-deploy -y
 ceph-deploy install --release luminous ceph-admin ceph-node-1 ceph-node-2
 ```
 
-![](PIC/ceph-lumi-lab-0.png)
+![](img/ceph-lumi-lab-0.png)
 
 
 #### Bước 5: Khởi tạo tiến trình MON
 ```
 ceph-deploy mon create-initial
 ```
-![](PIC/ceph-lumi-lab-1.png)
+![](img/ceph-lumi-lab-1.png)
 
 #### Bước 6: Khởi tạo tiến trình OSD
 - Liệt kê ổ đĩa hiện có
@@ -237,7 +237,7 @@ ceph-deploy mon create-initial
   ceph-deploy disk list ceph-node-1 ceph-node-2
   ```
 
-![](PIC/ceph-lumi-lab-2.png)
+![](img/ceph-lumi-lab-2.png)
 
 - Xóa trắng ổ /dev/sdb 
   ```
@@ -245,7 +245,7 @@ ceph-deploy mon create-initial
   ceph-deploy disk zap ceph-node-2 /dev/sdb
   ```
 
-![](PIC/ceph-lumi-lab-3.png)
+![](img/ceph-lumi-lab-3.png)
 
 - Tạo mới OSD
   ```
@@ -258,14 +258,14 @@ ceph-deploy mon create-initial
   lsblk
   ```
   
-![](PIC/ceph-lumi-lab-4.png)
+![](img/ceph-lumi-lab-4.png)
 
 - Chuyển key quản trị tới các node Ceph
   ```
   ceph-deploy admin ceph-admin ceph-node-1 ceph-node-2
   ```
 
-![](PIC/ceph-lumi-lab-5.png)
+![](img/ceph-lumi-lab-5.png)
 
 - Thiết lập quyền truy cập key (`trên tất cả các node`)
   ```
@@ -283,7 +283,7 @@ ceph-deploy mon create-initial
   ```
 __Kết quả__
 
-![](PIC/ceph-lumi-lab-8-bs.png)
+![](img/ceph-lumi-lab-8-bs.png)
 
 ### Phần 4: Kiểm tra Ceph setup
 #### Kiểm tra tại 1 trong các Ceph monitor node
@@ -300,4 +300,4 @@ Kiểm tra cluster status
 ```
 sudo ceph -s
 ```
-![](PIC/ceph-lumi-lab-8-bs.png)
+![](img/ceph-lumi-lab-8-bs.png)

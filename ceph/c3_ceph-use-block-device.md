@@ -114,7 +114,7 @@ ssh client
 sudo chmod 644 /etc/ceph/ceph.client.admin.keyring
 ```
 
-![](PIC/ceph-use-lab-1.png)
+![](img/ceph-use-lab-1.png)
 
 ### Phần 4: Cấu hình, Mount Ceph như Block Device
 > Ceph cho phép sử dụng Ceph Cluster cung cấp block device. Ta có thể sử dụng Ceph storage như hard drive thông thường. Ceph Block Storage hoặc Ceph RADOS Block Storage (RBD) lưu block device image như Object. Tự động nhận bản obj đó tới toàn Ceph Cluster.
@@ -140,7 +140,7 @@ Map disk01 image tới block device thông qua rbd kernel module
 sudo rbd map disk01
 rbd showmapped
 ```
-![](PIC/ceph-use-lab-2.png)
+![](img/ceph-use-lab-2.png)
 
 > disk01 image được map tới /dev/rbd0, từ đây ta có thể sử dụng nó như ổ đĩa thông thường
 
@@ -155,7 +155,7 @@ sudo mkdir -p /mnt/mydisk
 sudo mount /dev/rbd0 /mnt/mydisk
 ```
 
-![](PIC/ceph-use-lab-3.png)
+![](img/ceph-use-lab-3.png)
 
 > Ceph RBD or RADOS Block Device đã được cấu hình và mount vào hệ thông. Kiểm tra thông quá command
 
@@ -163,7 +163,7 @@ Kiểm tra lại kết quả
 ```
 df -hT
 ```
-![](PIC/ceph-use-lab-4.png)
+![](img/ceph-use-lab-4.png)
 
 ### Phần 5: Thiết lập RBD tại thời điểm khởi động
 #### Bước 1: Tạo file tại đường dẫn /usr/local/bin thực hiện hoạt động mount hoặc umount
