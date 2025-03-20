@@ -5,7 +5,7 @@
 
 Khác file-based storage bị gói hạn size. Object có thể có size to và có thể thay đôi metadata. Data được lưu với nhiều metadata, các thông tin về nội dung data. Metadata trong object storage cho phép user quản lý và truy cập data không có cấu trúc.
 
-![](PIC/ceph-in-1.png)
+![](img/ceph-in-1.png)
 
 > Object không giới hạn loại và số lượng metadata, cho phép thêm custom type trong metadata, vì thế ta có full quyền đối với data.
 
@@ -41,13 +41,13 @@ Tính toán ví trị group sẽ thông qua CRUSH lookup để quyết định v
 VD:
 Đầu tiên, Obj name và cluster placement group number được thêm với hash function và dựa trên pool IDs; vị trí group ID, PGID được tính ra. Tiếp theo Crush lookup thực hiện trên PGID để tìm primary và secondary OSD để ghi data.
 ```
-![](PIC/ceph-in-2.png)
+![](img/ceph-in-2.png)
 
 ## CRUSH hierarchy
 ### Giới thiệu
 CRUSH có khả năng nhận thức hạ tâng, hoàn toàn do user cấu hình. Nó duy trì nested hierarchy (phân cấp lồng nhau) cho tất cả thành phân của hạ tâng. CRUSH device list thường là disk, node, rack, row, switch, power circuit, room, data center, and so on. Các thành phần được biết tới = failure zones or CRUSH buckets. CRUSH map chứa list các bucket có sẵn tập hợp các thiết bị trong các vị trí vật lý. Đồng thời chứa list rule cho phép CRUSH tính toán nhân bản data trên các Ceph pool khác nhau.
 
-![](PIC/ceph-in-3.png)
+![](img/ceph-in-3.png)
 
 Dựa trên hạ tầng, CRUSH truyền data, nhân bản data trên khắp failure zones khiến data an toàn, có sẵn kể cả khi 1 số thành phần lỗi. Đây là cách CRUSH loại bỏ các thành phần có khả năng lỗi trên hạ tầng lưu trữ, đồng thời nó sử dụng các thiết bị thông thường mà vẫn đảm bảo tính HA (ko phải thiết bị chuyên dụng). CRUSH ghi data công bằng trên khắp cluster disk, tăng hiệu năng, tính bảo đảm, đưa tất cả disk vào cluster. Nó chắc rằng tất cả cluster disk được sử dụng bằng nhau kể cả khả năng lưu trữu khác nhau. Để làm được điều đó, CRUSH cấp phát weights trên mỗi OSD. Cân năng càng cao trên OSD thì khả năng lưu trữ của chính OSD càng cao, từ đó CRUSH ghi nhiều data tới những OSD này, duy trì tính cân bằng trên các thiết bị.
 
@@ -67,7 +67,7 @@ Khi Ceph cluster nhận yêu cầu từ data storage, nó sẽ chia thành nhi�
 
 __Placement groups__ là tập logical (logical collection) các obj được nhân bản trên các OSDs để nâng cao tính bảo đảm trong storage system. Dựa trên mức nhân bản của Ceph pool, mỗi placement group sẽ được nhân bản, phân tán trên nhiều hơn 1 OSD tại Ceph cluster. Ta có thể cân nhắc placement group như logical container giữ nhiều obj = logical container is mapped to multiple OSDs. __Placement groups (vị trí nhóm)__ được thiết kế đáp ứng khả năng mở rộng, hiệu suất cao trong Ceph storage system.
 
-![](PIC/ceph-in-4.png)
+![](img/ceph-in-4.png)
 
 Nếu không có placement groups, nó sẽ khó cho việc quản trị, theo dõi các obj được nhân bản (hảng triệu obj được nhân bản) tới hàng trăm các OSD khác nhau. Thay vì quản lý tất cả obj riêng biệt, hệ thông cần quản lý placement group với numerous objects (số lượng nhiều các obj). Nó khiến ceph dễ quản lý và giảm bớt sự phức tạp. Mỗi placement group yêu cầu tài nguyên hệ thống, CPU và Memo vì chúng cần quản lý nhiều obj.
 
