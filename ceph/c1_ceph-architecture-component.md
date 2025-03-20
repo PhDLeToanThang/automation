@@ -5,7 +5,7 @@ Ceph storage cluster xây dựng từ 1 vài software daemons. Mỗi tiến trì
 
 ### Kiến trúc Ceph
 
-![](PIC/ceph-arch-1.png)
+![](img/ceph-arch-1.png)
 
 #### __Reliable Autonomic Distributed Object Store (RADOS)__
 
@@ -59,7 +59,7 @@ Khi sảy ra lỗi disk, Ceph OSD daemon sẽ so sánh các OSD để bắt đ�
 ### Ceph OSD filesystem
 Ceph OSD bao gồm Ceph OSD filesystem, Linux filesystem nằm phía trên và Ceph OSD service. Linux filesystem góp phần quan trọng tới Ceph OSD daemon như hỗ trợ __extended attributes (XATTRs)__. __filesystems' extended attributes__ cung cấp các thông tin nội bộ về obj state, snap shot, metadata, ACL tới OSD daemon, cho phép quản trị data.
 
-![](PIC/ceph-arch-2.png)
+![](img/ceph-arch-2.png)
 
 Hoạt động Ceph OSD bên trên physical disk drive có phân vùng trong Linux partition. Linux partition có thể là Btrfs (B-tree file system), XFS, or ext4. Việc lựa chọn filesystem góp phần lớn trong việc tính toán hiệu năng trên Ceph Cluster, mỗi file system đều có đặc điểm riêng.
 
@@ -74,7 +74,7 @@ Ceph OSD sử dụng các thuộc tính mở rộng của FS để biết trạn
 #### __Ceph OSD journal__
 Ceph sử dụng journaling filesystems như Btrfs, XFS cho OSD. Trước khi đẩy data tới backing store, Ceph ghi data tới 1 phân vùng đặc biệt gọi journal. Nó là small buffer-sized partition cách biệt với spinning disk as OSD hoặc trên SSD disk or partition hoặc là 1 file trên fs. Trong kỹ thuật, Ceph ghi tất cả tới jounal, sau đó mới lưu trừ tới backing storage.
 
-![](PIC/ceph-arch-3.png)
+![](img/ceph-arch-3.png)
 
 10gb là size cơ bản của journal, có thể to hơn tùy vào partition. Ceph sử dụng journals để tăng tốc độ và tăng tính bảo đảm. Journal cho phép Ceph OSD thực hiện công việc lưu trư nhanh hơn; random write được ghi trên sequential pattern on journals, sau đó đẩy sang FS. Điều này kiến filesystem có đủ thời gian để kết hợp ghi xuống disk. Hiệu suất được cải thiện khi journal được thiết lập trên SSD disk partition. Theo kịch bản, tất cả client sẽ được ghi rất nhanh trên SSD journal sau đó đẩy xuống đĩa quay.
 
@@ -116,7 +116,7 @@ Tương tác trực tiếp với RADOS cluster với librados library nâng cao 
 ### __Ceph block storage__
 Một trong những thành phần quan trọng sử dụng cho định dang dữ liệu trong môi trường doanh nghiệp. Ceph block device = RADOS block device (RBD); cung cấp giải pháp block storage tới physical hypervisors cung cấp cho virtual machines. Ceph RBD driver được tích hợp với Linux mainline kernel và hỗ trợ QEMU/KVM, cho phép Ceph block device seamlessly.
 
-![](PIC/ceph-arch-4.png)
+![](img/ceph-arch-4.png)
 
 Linux host hỗ trợ đầy đủ Kernel RBD (KRBD) và maps Ceph block devices sử dụng librados. RADOS sau đó lưu trữ Ceph block device objects across clusters in a distributed pattern. Khi Ceph block device được map Linux host, nó có thể sử dụng như 1 phần vùng RAW hoặc labelled với filesystem followed by mounting.
 
@@ -132,7 +132,7 @@ Ceph Object Store hỗ trợ 3 giao diện:
 + Swift compatible
 + Admin API
 
-![](PIC/ceph-arch-5.png)
+![](img/ceph-arch-5.png)
 
 Ceph Object Gateway có user quản trị riêng. Cả S3 và Swift API chia sẻ phần chung bên trong Ceph Cluster, vì thế có thể write data từ 1 API và lấy từ data từ 1 data khác. Để tăng tốc xử lý, nó sử dụng memory để cache metadata. Ta có thể sử dụng nhiều hơn 1 gateway và giữ chúng bên dưới load balancer để thực hiện quản lý load. Hiệu năng sẽ cải thiện khi chia nhỏ REST object thành smaller  RADOS objects. Bên cạnh S3 và Swift API, app có thể bỏ qua RADOS gateway, sử dụng trực tiếp thông quan librados.
 
@@ -144,6 +144,6 @@ MDS không lưu trữ local data, ít cần thiết trong 1 số kịch bản. N
 ## Ceph filesystem
 CephFS cung cấp POSIX-compliant filesystem nằm trên RADOS. Nó sử dụng tiến trình MDS để quản trị metadata, tách biệt metadata khởi data, giảm phức tạp, nâng cao tính bảo đảm. CephFS thừa hương 1 số tính năng từ RADOS và cung cấp tính năng cân bằng động cho data.
 
-![](PIC/ceph-arch-6.png)
+![](img/ceph-arch-6.png)
 
 __libcephfs libraries__ nắm vai trò quan trọng, hỗ trợ thực thi client. Tương thích tốt với Linux kernel driver, vì thế client có thể sử dụng filesystem để mount thông qua mount cmd. Nó tương thích với SAMBA, hỗ trợ CIFS và SMB. CephFS mở rộng hỗ trợ file systems trong user space (FUSE) thông quan cephfuse modules. Nó cũng cho phép app tương tác trực tiếp, với RADOS cluster sẽ sử dụng libcephfs libraries.
