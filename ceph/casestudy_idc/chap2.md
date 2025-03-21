@@ -38,9 +38,9 @@ Về cơ bản, các nhà cung cấp sẽ có nhưng kiến trúc khác nhau. Ki
 
 PCI là chuẩn chipset sử dụng cho kết nối giữa CPU và Memory với các thiết bị IO, các thiết bị mở rộng. Có rất nhiều chuẩn PCI định nghĩa bởi PCI Special Interest Group (PCISIG): PCI Express (PCIe), PCIx, Fibre Channel, Fibre Channel over Ethernet (FCoE), InfiniBand Architecture (IBA), SAS, SATA, Universal Serial Bus (USB), and 1394 Firewire.
 
-![](../../images/chap2-1.png)
+![](images/chap2-1.png)
 
-![](../../images/chap2-2.png)
+![](images/chap2-2.png)
 
 > Tham khỏa thêm docs
 
@@ -64,7 +64,7 @@ Kiến trúc storage liên quan đến các vấn đề từ memory tới các t
 Tốc độ truy cập tới các thành phần L1, L2, trên CPU sẽ có tốc độ khác nhau (từ nhanh tới chậm, đố lớn khác nhau). Nhanh nhất => đi cùng với giá thành cao, kém linh hoạt. Chậm => độ lớn nhiều, giá thành vừa phải, độ linh hoạt cao (ứng với memory ~ các thiết bị storage).
 > Xem thêm docs
 
-![](../../images/chap2-3.png)
+![](images/chap2-3.png)
 
 Các VM cần memory, các thiết bị ngoại vị, thiết bị mở rộng để hoạt động (tài nguyên lấy này lấy từ server vật lý ra) => VM đc coi là thành phần phần ảo, sử dụng cấu trúc dữ liệu riêng, truy cấp tài nguyên chia sẻ có sẵn từ cloud, system. Càng nhiều VMs càng đòi hỏi nhiều Memory.
 
@@ -79,15 +79,15 @@ Các loại Storage có thể phân loại (NVRAM, FLASH base) hiêu năng sẽ 
 
 Storage có thẻ là dedicated internal Direct Attached Storage (DAS) hoặc external shared DAS, hoặc các công nghệ software-base, cloud-base
 
-![](../../images/chap2-4.png)
+![](images/chap2-4.png)
 
 Các giải pháp yêu cầu khả năng I/O target vào các thành phần block, file, object. Các chuẩn kết nối (e.g., SAS, iSCSI, Fibre Channel, FCoE, or SRP on InfiniBand), where the target is a SCSI logical unit (LUN).
 
-![](../../images/chap2-5.png)
+![](images/chap2-5.png)
 
 Các vấn đề về ổ đĩa, ....
 
-![](../../images/chap2-6.png)
+![](images/chap2-6.png)
 
 ## Block Storage Access
 
@@ -95,7 +95,7 @@ Block-based data access là mức truy cập thấp nhất và mức cơ bản n
 
 Các ứng dụng truy cập file system, các loại database, chương trình quản lý thư mục, .... đều đa trừ tượng lớp block-based. Mức trừ tượng có nhiêu mức, trên ổ đĩa, trên storage system, controller, RAID, hay các tầng ảo hóa của virtualized storage, trên các  device drivers, các volume manager, databases, và các application.
 
-![](../../images/chap2-7.png)
+![](images/chap2-7.png)
 
 ## Files Access, File Systems, and Objects
 
@@ -105,20 +105,20 @@ File system software cung cấp trừ tượng hóa truy cập file-based trên 
 
 (các hệ thống NAS, DAS, SAN ..)
 
-![](../../images/chap2-8.png)
+![](images/chap2-8.png)
 
 ## Object and API Storage Access
 Object-based storage hoặc content-addressable storage (CAS), tiếp tục kế thừa và xây dựng trên block, file storage access models. Thay vì truy cập storage system dựa trên file access, đọc ghi dữ liệu bằng các file system, object based storage làm việc với các object.
 
-![](../../images/chap2-9.png)
+![](images/chap2-9.png)
 
 Đối với block- và file-based storage, app khi làm việc với dữ liệu, sẽ tương với các địa chỉ vật lý đi kèm các metadata. Với object storage, data sẽ lưu dưới dạng object chứa thông tin, metadata (quản lý = các metadata). Object được định nghĩa bởi app hoặc các đối tượng (trừa tượng thông tin vật lý). Các hoạt động truy vấn, đọc ghi dữ liệu dựa trên key object.
 
-![](../../images/chap2-10.png)
+![](images/chap2-10.png)
 
 ## I/O Connectivity and Networking Fundamentals
 
-![](../../images/chap2-11.png)
+![](images/chap2-11.png)
 
 Có rất nhiều phương thức IO, các giao thức networking protocol, các chuẩn kết nối interface. Các giao thức storage IO có nhưng tiêu chuẩn riêng đễ hỗ trợ truyền data giữa các server, storage cũng như giữa các storage device.
 
@@ -137,7 +137,7 @@ Thuật ngữ networked storage thường nói về NAS và SAN. Trong bối c�
 
 Các giao thức, interface chuẩn  Fibre Channel, InfiniBand, Serial Attached SCSI (SAS), and Serial ATA (SATA) as well as Ethernet-based storage.
 
-![](../../images/chap2-12.png)
+![](images/chap2-12.png)
 
 ## IT Clouds
 Có rất nhiều loại hình cloud (public, private, hybrid), các cloud sẽ có chức năng khác nhau khi nói đến từng mảng, từng giải pháp và tùy theo mô hình triển khai.
@@ -164,7 +164,7 @@ Qui chuẩn service. Các từ viết tắt: `x as a Service`, trong đó x có 
 ## Virtualization: Servers, Storage, and Networking
 Có rất nhiều khía cạnh khi nói đến ảo hóa. Các công nghệ ảo hóa được tiếp cận, phát triển, góp phần nâng cho chất lượng dịch vụ của các nhà cung. Nâng cáo hiệu năng, tài nguyên server, storage. Giảm thiểu năng lượng, chi phí làm mát, không gian, phương pháp quản trị, tài sử dụng, tái tận dụng, tăng sự đa dạng.
 
-![](../../images/chap2-13.png)
+![](images/chap2-13.png)
 
 > Sơ đồ mô hình, kiếm trúc cơ bản
 
@@ -179,30 +179,30 @@ Các storage virtualization service khác nhau hoạt động tại các vị tr
 
 Hầu hết các storage virtualization solutions sử dụng khái niệm trừ tượng (abstraction). Tính trừ tượng (Abstraction) và minh bạch trong công nghệ (technology transparency) bao gồm device emulation, interoperability, coexistence, backward compatibility, transition to new technology with transparent data movement and migration, support for HA and BC/DR, data replication or mirroring (local and remote), snapshots, backup, and data archiving.
 
-![](../../images/chap2-14.png)
+![](images/chap2-14.png)
 
 ## Data and Storage Access
 Quan hệ, sự phụ thuộc giữa các thành phần lưu trữ
 
-![](../../images/chap2-15.png)
+![](images/chap2-15.png)
 
 1 số mô hình, hạ tầng từ cơ bản tới phức tạp
 
-![](../../images/chap2-16.png)
+![](images/chap2-16.png)
 
 ## Mô hình DAS, NAS, SAN
 
-![](../../images/chap2-17.png)
+![](images/chap2-17.png)
 
-![](../../images/chap2-18.png)
+![](images/chap2-18.png)
 
 > Xem thêm docs
 
 ## Networked Storage: Public and Private Clouds
 
 Mô hình cloud kết hợp DAS, NAS, SAN storage
-![](../../images/chap2-19.png)
+![](images/chap2-19.png)
 
 Bảng tổng hợp các thuật ngữ
 
-![](../../images/chap2-20.png)
+![](images/chap2-20.png)

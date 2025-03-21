@@ -17,7 +17,7 @@ Các tính chất cơ bản storage:
 
 > Góc nhìn cơ bản storage
 
-![](../../images/chap2-22.png)
+![](images/chap2-22.png)
 
 ## Lớp Storage - Tiered Storage
 Mục đích của Tiered storage là định hình các lớp storage system, các mức hiệu suất, availability, capacity, and energy or economics (PACE) capabilities để đáp ứng các yêu cầu của ứng dụng.
@@ -41,13 +41,13 @@ Storage reliability, availability, and serviceability kết hợp:
 
 Để bảo đảm storage reliability, availability, and serviceability, sẽ có từng các yêu cầu đặc biệt đối với từng dịch vụ:
 
-![](../../images/chap2-23.png)
-![](../../images/chap2-24.png)
+![](images/chap2-23.png)
+![](images/chap2-24.png)
 
 ## Aligning Storage Technology and Media to Application Needs
 Do sự đa dạng các loại dữ liệu từ trực tuyến => ngoại tuyến, tính truy cập khác nhau vì vậy giải pháp lưu trữ cần tối ưu theo nhiều hướng khác nhau để đáp ứng, tối ưu hóa trên từng vấn đề.
 
-![](../../images/chap2-25.png)
+![](images/chap2-25.png)
 
 Tiered storage bao gồm các thiết bị từ tốc độ nhanh, hiệu năng cao tới hiệu năng chậm, khả năng lưu trữ lớn.
 
@@ -63,7 +63,7 @@ Các vấn đề cần cân nhắc khác là RAID, sự đánh đổi hiệu nă
 
 Đánh đổi giữa chất lượng và giá thành
 
-![](../../images/chap2-26.png)
+![](images/chap2-26.png)
 
 > Tìm hiểu các loại ổ đĩa theo docs
 
@@ -76,7 +76,7 @@ Ngoài việc hỗ trợ các hệ thống mở, tương thích các mainframe, 
 ## Servers as Storage, Storage as Servers
 Khái niệm "Open storage" có nghĩa là storage cho hệ thống mở hoặc storage system sử dụng công nghệ mở. Giá trị của storage system là tận dụng tính mở của công nghệ mới, tính linh hoạt trong lựa chọn storage software stack, khả năng chạy giải pháp trên phần cứng được chọn, trái ngược với giải pháp trọn gói (tính đóng gói cao, khả năng tùy chỉnh thấp). 2 công nghệ thường thấy là ZFS hoặc Microsoft Windows Storage Server
 
-![](../../images/chap2-27.png)
+![](images/chap2-27.png)
 
 Storage systems (Table 9.6), gateways, and appliances (thiết bị) sử dụng công nghệ mở bao gồm 1 phần mềm chuyên dụng hoặc tool quản trị storage chạy trên thiết bị mở hoặc trên phần cứng chuấn x86-based PC server. 1 số giải pháp khác cho openstorage là sử dụng các open source software chạy trên các phần cứng mở (đa dạng) thay vì các phần mềm chuyên dụng độc quyền.
 
@@ -118,7 +118,7 @@ Các application sử dụng clustered, bulk, grid, and “big data” storage s
 
 Clustered storage solutions cần đáp ứng các yêu cầu về tính truy cập tuần tự lớn, khả năng truy cập đồng thời (large sequential parallel or concurrent file access), hỗ trợ phương thức truy cập ngẫũ nhiên tới các file nhỏ. Scalable và flexible clustered file servers, tương tính các servers, networking, các công nghệ storage (storage technologies), cũng như đáp ứng được các công nghệ mới, yêu cầu lưu trữ dữ liệu không có cấu trúc, cloud services, and multimedia. Đồng thời đáp ứng các yêu cầu về hiệu năng (IOPS, bandwidth), độ trễ thấp, dung lượng, tính linh hoạt và chi phí thấp.
 
-![](../../images/chap2-28.png)
+![](images/chap2-28.png)
 
 Tính mở rộng, linh hoạt trên cluster file server, các hệ thống lưu trữ (Scalable and flexible clustered file server and storage systems) cần có khả năng cải tiến, tính mới phần cứng theo từng năm, tránh sự lạc hậu hạ tầng.
 
@@ -137,7 +137,7 @@ Các yêu cầu cần đáp ứng grid, clustered, big data, and scale-out stora
 - What interface and protocol options are supported?
 
 ## Cloud Storage
-![](../../images/chap2-20.png)
+![](images/chap2-20.png)
 
 Cloud storage (Figure 9.11) có thể dạng public, private, có kiến trúc, có thể là 1 sản phẩm, hoặc giải pháp bao gồm hardware, software, networking, services. 1 số loại cloud storage services hoặc giải pháp cloud tập trung vào các vấn đề cụ thể (file sharing, backup/restore, archiving, BC/DR, lưu trữ data dạng multimedia như photos, video, and audio.).
 
@@ -191,7 +191,7 @@ Các vấn đề cần cân nhắc trong Storage virtualization:
 
 1 số dạng storage virtualization là các virtual storage server hoặc các storage partition cho phép hơp nhật các hệ thống lưu trữ, sau đó tách biệt các phân vùng cho các app, server dưới dạng các hệ thống lưu trữ khác nhau. Ý nghĩa của giải pháp là tính tách biệt, hợp nhất, cho phép trừ tượng các LUNs, volumes, file system. VD: storage server hợp nhất dữ liệu trên các ứng dụng đồng thời ngăn việc truy cập trái phép trên các ứng dụng, khác hàng, người dùng.
 
-![](../../images/chap9-1.png)
+![](images/chap9-1.png)
 
 1 số giải pháp storage virtualization xây dựng dựa trên các software chạy trên thiết bị hoặc các phần cứng hệ thống cho phép mô phỏng.
 
@@ -200,4 +200,4 @@ Storage virtualization nằm tại nhiều vị khí khác nhau, bao gồm các 
 
 Việc sử dụng storage virtualization và nơi đặt sẽ tùy theo thiết kế của hệ thống. Giải pháp cloud có thể tiếp cần theo nhều hướng, có thể kết hợp nhiều giáp pháp, miễn là các giải pháp đó phù hợp với yêu cầu của bạn.
 
-![](../../images/chap2-2.png)
+![](images/chap2-2.png)
