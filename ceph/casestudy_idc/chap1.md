@@ -14,7 +14,7 @@ Vấn đề hiện tại phải đối mặt của các doanh nghiệp là mật
 
 > Tổng kết, việc bùng nổ dữ liệu khiến các tổ chức sẽ phải đối mặt với nhiều vấn đề hơn (Năng lượng tiêu thụ, nơi đặt, không gian, server, storage, tài nghiên mạng, quản lý, túi tiền, nhân viên)
 
-![](/images/chapter1-1.PNG)
+![](images/chapter1-1.PNG)
 
 ## The Business End of IT Data Storage Impact
 Sự mở rộng các đối tượng cần lưu trữ, từ small office/home office (SOHO) tới remote office/branch office (ROBO), small/medium-size business (SMB), small/medium enterprise (SME), tới ultra-large organizations or enterprises, economics.
@@ -35,7 +35,7 @@ service-level objectives (SLOs) là chất lượng dịch vụ thỏa thuận g
 
 Việc sử dụng cloud service sẽ giảm giá thành, tận dụng tối đa chi phí, QoS và SLOs. Đồng nhất hóa các thành phần, vướt qua các trở ngại, rào cản đang mắc phải, tối ưu chi phí duy trì, cải thiện trải nhiệm dịch vụ, bao gồm QoS và SLOs. Cho phép mở rông, hỗ trợ các giải pháp mới, cải thiện hệ thống hiệu quả.
 
-![](/images/chapter1-2.PNG)
+![](images/chapter1-2.PNG)
 
 > Tổng kết: Clouds, virtualization, và storage networks có thể là các tool, kỹ thuật, giải pháp hỗ trợ, đảm bảo sự tăng trưởng cùng với giảm giá thành, loại bỏ sự phức tạp, tăng sự linh hoạt, cải thiện trải nhiệm người dùng. hơn nữa, các công cụ, phương tiên, kỹ thuật hỗ trợ việc kinh hiệu quả hơn. Cho phép áp dụng giải pháp mới, tận dụng những gì đã có, bắt kịp sự phát triển.
 
@@ -104,7 +104,7 @@ Trong trường hợp ảo hóa và cloud, 1 số thành phần có thể là c�
 
 > Dựa trên loại ứng dụng, có thể chuyển 1 phần sang cloud hoặc tất cả sang cao. Bên cạnh đó yêu cầu lựa chọn các nhà cung cấp dịch vụ, hosting,  
 
-![](/images/chapter1-3.PNG)
+![](images/chapter1-3.PNG)
 
 ## Information Factories
 Hầu hết các tổ chức IT hoặc hạ tầng sẵn có, có hỗ trợ các ứng dụng business, kèm theo các phương pháp quản lý, tổ chức thông tin. Trong 1 số trường hợp, business app cung cấp dịch vụ bởi IT bao gồm thông tin quản trị factories, accounting, marketing, and engineering, .... Tuy nhiên các thông tin cung cấp không đủ để giám sát, quản lý sâu dịch vụ.
@@ -117,7 +117,7 @@ Factories có thể dạng dedicated hoặc private, có thể dạng chia sẻ 
 
 Các tổ chức có thể có factory riêng, hoặc có thể là hạ tầng ảo hoặc các dịch vụ cung cấp từ hạ tầng nhà cung cấp. IT service có thể được cung cấp thông qua hạ tầng các tổ chức khác dạng phần mêm thứ 3 hoặc ảo hóa
 
-![](/images/chapter1-4.PNG)
+![](images/chapter1-4.PNG)
 
 Tính chất tiêu biểu:
 - Reliable, to meet demand, avoid downtime, avoid mistakes and rework
@@ -158,7 +158,7 @@ Information factories (or clouds) có thể có hoặc cho phép các tính ch�
 - Efficient, cost-effective resource usage that meets QoS and SLAs
 - Automate and guide users or customers to best-fit services selection
 
-![](/images/chapter1-5.PNG)
+![](images/chapter1-5.PNG)
 
 ## Cơ hội của Cloud, Virtualization, và Data Storage Networking
 Các information factory đặt tại 1 địa điểm cố định sẽ kéo theo các tài nguyên về năng lượng, làm mát, các kỹ thuật, .... Sản phẩm IF là các information service, chúng có có thể là server, storage, network, ... 
@@ -183,7 +183,7 @@ Cloud được định nghĩa khác nhau qua từng khía cạnh dựa trên qua
 ## What are IT clouds? Where do they fit?
 Có thể bạn đã và đang sử dụng cloud, các sản phẩm dựa trên cloud, các kỹ thuật lưu trữ, hoặc 1 số sản phẩm tương tự nhưng ko nhận thấy.
 
-![](/images/chapter1-6.PNG)
+![](images/chapter1-6.PNG)
 
 Các tính năng cơ bản cloud hoặc service bao gồm:
 - Remote or off-site backup, replication, vaulting, or data copy
@@ -199,13 +199,13 @@ Sự nhầm lẫn xuất hiện do có quá nhiều loại cloud, bao gồm publ
 
 ## Private Cloud: Coexistence vs. Competing with Legacy IT (Khả năng tương thích, kế thừa tài sản hiện có)
 
-![](/images/chapter1-7.PNG)
-![](/images/chapter1-8.PNG)
+![](images/chapter1-7.PNG)
+![](images/chapter1-8.PNG)
 
 # Cloud, Virtualization, and Storage Networking: Bringing It Together (for Now)
 
 Cách cloud, virtualization, networking technologies và các kỹ thuật khác kế hợp với nhau.
 
-![](/images/chapter1-9.PNG)
+![](images/chapter1-9.PNG)
 
 # Nguồn 
