@@ -62,10 +62,10 @@ Công thức tính mức dự phòng phù hợp:
 ### **Tóm tắt bảng phân tích**
 | **Số ESXi Host** | **Failover Capacity khuyến nghị** | **Performance degradation VMs tolerate** | **Các mô hình Cluster Failover** |
 |-----------------|---------------------------|----------------------------------|-----------------------------------|
-| **2 Hosts**  | **50% CPU & RAM** | **0%** (không chịu lỗi nếu mất 1 host) | ORACLE RAC / MS-SQL Cluster Node / AD-DC Dedicate ... |
+| **2 Hosts**  | **50% CPU & RAM** | **0%** (không chịu lỗi nếu mất 1 host) | ORACLE RAC / MS-SQL Cluster Node / AD-DC Dedicate / Exchange DAG / SharePoint Farm ... |
 | **3 Hosts**  | **30-35% CPU & RAM** | **~85%** | vSphere DRS,SDRS,HA/Mô hình Active - Passive - Witness: vCenter HA ... | 
 | **4 Hosts**  | **25-30% CPU & RAM** | **~93%** | VCF Management Domain / vSAN Witness / Nutanix HCI ... |
-| **24 Hosts** | **5-10% CPU & RAM** | **~98%** | vSAN Enterprise Plus Domain ... |
+| **24 Hosts** | **5-10% CPU & RAM** | **~98%** | VMware Cloud Foundation / vSAN Enterprise Plus Domain / IoT Flings Broadcom ... |
 | **64 Hosts** | **1-5% CPU & RAM** | **~99.5%** | Full Hosts a vSphere DRS Cluster |
 
 ---
