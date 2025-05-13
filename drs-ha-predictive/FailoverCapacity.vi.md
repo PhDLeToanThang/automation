@@ -44,7 +44,7 @@ Mức khuyến nghị thường là **25 - 30%**, nhưng cần điều chỉnh t
 - Nếu **1 host bị lỗi**, còn lại **63 host**, mức ảnh hưởng gần như không đáng kể.  
 - **Dự phòng hợp lý:**
 
-$\frac{1}{64}\times{100}\% = 1.5\%$ -> 1/64 × 100% = 1.5%
+  $\frac{1}{64}\times{100}\% = 1.5\%$ -> 1/64 × 100% = 1.5%
 
 - **Khuyến nghị:** **1-5% CPU & RAM**  
 
@@ -53,10 +53,10 @@ $\frac{1}{64}\times{100}\% = 1.5\%$ -> 1/64 × 100% = 1.5%
 ### **Tóm tắt bảng phân tích**
 | **Số ESXi Host** | **Failover Capacity khuyến nghị** | **Các mô hình Cluster Failover** |
 |------------------|-----------------------------------|-----------------------------------|
-| **2 Hosts** | **50% CPU & RAM** | ORACLE RAC / MS-SQL Cluster Node / AD-DC Dedicate ... |
-| **3 Hosts** | **30-35% CPU & RAM** | vSphere DRS,SDRS,HA/Mô hình Active - Passive - Witness: vCenter HA ... | 
-| **4 Hosts** | **25-30% CPU & RAM** | VCF Management Domain / vSAN Witness / Nutanix HCI ... |
-| **24 Hosts** | **5-10% CPU & RAM** | vSAN Enterprise Plus Domain / VCF Enterprise Plus ... |
+| **2 Hosts** | **50% CPU & RAM** | ORACLE RAC /MS-SQL Cluster Node /AD-DC Dedicate ... |
+| **3 Hosts** | **30-35% CPU & RAM** | vSphere DRS,SDRS,HA/Mô hình Active-Passive-Witness: vCenter HA ... | 
+| **4 Hosts** | **25-30% CPU & RAM** | VCF Management Domain /vSAN Witness /Nutanix HCI ... |
+| **24 Hosts** | **5-10% CPU & RAM** | vSAN Enterprise Plus Domain /VCF Enterprise Plus / IoT Flings Broadcom ... |
 | **64 Hosts** | **1-5% CPU & RAM** | Full Hosts a vSphere DRS Cluster |
 
 ---
