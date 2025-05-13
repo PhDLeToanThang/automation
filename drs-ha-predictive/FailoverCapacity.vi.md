@@ -23,7 +23,7 @@ Công thức tính mức dự phòng phù hợp:
 - Nếu **1 host bị lỗi**, 2 host còn lại phải gánh VM từ host bị lỗi.
 - **Dự phòng CPU & RAM**:  
   
-  $\frac{1}{3}\times 100\% = 33.3\%$ -> 1/3 = 33.3%
+  $\frac{1}{3}\times 100\% = 33.3\%$ ~ 33.3%
 
 - **Khuyến nghị**: **30-35% CPU & RAM**
 - **Performance degradation VMs tolerate**: **~85%**, vì tài nguyên còn lại sẽ giảm đáng kể khi 1 host bị lỗi.
@@ -34,7 +34,7 @@ Công thức tính mức dự phòng phù hợp:
 - Nếu **1 host bị lỗi**, còn lại **3 host** nên vẫn đảm bảo failover tốt.
 - **Dự phòng CPU & RAM**:  
   
-  $\frac{1}{4}\times 100\% = 25\%$ -> 1/4 = 25%
+  $\frac{1}{4}\times 100\% = 25\%$ ~ 25%
   
 - **Khuyến nghị**: **25-30% CPU & RAM**
 - **Performance degradation VMs tolerate**: **~93%** (chỉ suy giảm nhẹ hiệu suất).
@@ -45,7 +45,7 @@ Công thức tính mức dự phòng phù hợp:
 - Nếu **1 host bị lỗi**, còn lại **23 host**, mức ảnh hưởng là **rất nhỏ**.
 - **Dự phòng CPU & RAM**:  
   
-  $\frac{1}{24}\times 100\% = 4.2\%$ -> 1/24 = 4.2%
+  $\frac{1}{24}\times 100\% = 4.2\%$ ~ 4.2%
   
 - **Khuyến nghị**: **5-10% CPU & RAM**
 - **Performance degradation VMs tolerate**: **~98%**, gần như không ảnh hưởng.
@@ -56,7 +56,7 @@ Công thức tính mức dự phòng phù hợp:
 - Nếu **1 host bị lỗi**, còn lại **63 host**, mức ảnh hưởng cực nhỏ.
 - **Dự phòng CPU & RAM**:  
   
-  $\frac{1}{64}\times 100\% = 1.5\%$ -> 1/64 = 1.5%
+  $\frac{1}{64}\times 100\% = 1.5\%$ ~ 1.5%
   
 - **Khuyến nghị**: **1-5% CPU & RAM**
 - **Performance degradation VMs tolerate**: **~99.5%**, gần như không suy giảm hiệu suất.
