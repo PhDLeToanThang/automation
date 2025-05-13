@@ -1,6 +1,10 @@
 ### **Phân tích chỉ số Reserved Failover CPU & Memory Capacity và Performance Degradation VMs Tolerate**  
 
-Trong **vSphere HA Admission Control**, **Reserved failover CPU capacity** và **Reserved failover Memory capacity** giúp dự phòng tài nguyên để đảm bảo VM có thể **di chuyển sang ESXi Host còn lại** khi xảy ra lỗi. **Performance degradation VMs tolerate** (mức VM chịu suy giảm hiệu suất) xác định ngưỡng tài nguyên tối thiểu có thể chấp nhận được khi xảy ra sự cố.  
+Trong **vSphere HA Admission Control**: 
+
+- **Reserved failover CPU capacity** và 
+- **Reserved failover Memory capacity** giúp dự phòng tài nguyên để đảm bảo VM có thể **di chuyển sang ESXi Host còn lại** khi xảy ra lỗi.
+- **Performance degradation VMs tolerate** (mức VM chịu suy giảm hiệu suất) xác định ngưỡng tài nguyên tối thiểu có thể chấp nhận được khi xảy ra sự cố.  
 
 Công thức tính mức dự phòng phù hợp:  
 
@@ -63,8 +67,8 @@ Công thức tính mức dự phòng phù hợp:
 | **Số ESXi Host** | **Failover Capacity khuyến nghị** | **Performance degradation VMs tolerate** | **Các mô hình Cluster Failover** |
 |-----------------|---------------------------|----------------------------------|-----------------------------------|
 | **2 Hosts**  | **50% CPU & RAM** | **0%** (không chịu lỗi nếu mất 1 host) | ORACLE RAC / MS-SQL Cluster Node / AD-DC Dedicate / Exchange DAG / SharePoint Farm ... |
-| **3 Hosts**  | **30-35% CPU & RAM** | **~85%** | vSphere DRS,SDRS,HA/Mô hình Active - Passive - Witness: vCenter HA ... | 
-| **4 Hosts**  | **25-30% CPU & RAM** | **~93%** | VCF Management Domain / vSAN Witness / Nutanix HCI ... |
+| **3 Hosts**  | **30-35% CPU & RAM** | **~85%** | vSphere DRS,SDRS,HA/Mô hình Active - Passive - Witness: vCenter HA / DataBase Quorium ... | 
+| **4 Hosts**  | **25-30% CPU & RAM** | **~93%** | VCF Management Domain / vSAN Witness / Nutanix HCI / Datium UCI... |
 | **24 Hosts** | **5-10% CPU & RAM** | **~98%** | VMware Cloud Foundation / vSAN Enterprise Plus Domain / IoT Flings Broadcom ... |
 | **64 Hosts** | **1-5% CPU & RAM** | **~99.5%** | Full Hosts a vSphere DRS Cluster |
 
