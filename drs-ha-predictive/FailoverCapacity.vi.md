@@ -53,7 +53,7 @@ Mức khuyến nghị thường là **25 - 30%**, nhưng cần điều chỉnh t
 ### **Tóm tắt bảng phân tích**
 | **Số ESXi Host** | **Failover Capacity khuyến nghị** | **Các mô hình Cluster Failover** |
 |------------------|-----------------------------------|-----------------------------------|
-| **2 Hosts** | **50% CPU & RAM** | ORACLE RAC /MS-SQL Cluster Node /AD-DC Dedicate ... |
+| **2 Hosts** | **50% CPU & RAM** | ORACLE RAC /MS-SQL Cluster Node /AD-DC Dedicate / Exchange DAG / SharePoint Farm ... |
 | **3 Hosts** | **30-35% CPU & RAM** | vSphere DRS,SDRS,HA/Mô hình Active-Passive-Witness: vCenter HA ... | 
 | **4 Hosts** | **25-30% CPU & RAM** | VCF Management Domain /vSAN Witness /Nutanix HCI ... |
 | **24 Hosts** | **5-10% CPU & RAM** | vSAN Enterprise Plus Domain /VCF Enterprise Plus / IoT Flings Broadcom ... |
