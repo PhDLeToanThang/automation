@@ -90,7 +90,7 @@
 
 # Phân tích kỹ về trường hợp chỉ có 3 ESXi host:
 
->> Nếu giải định mô hình triển khai vCenter HA theo các điueef kiện chuẩn như trên, nhưng tôi chỉ có 3 ESXi host, thì hãy chỉ ra các tình huống giả sửa lỗi của 1 , 2 ,3 esxi host thì các sự cố tương ứng của vcenter HA là gì ?
+>> Nếu giải định mô hình triển khai vCenter HA theo các điều kiện chuẩn như trên, nhưng tôi chỉ có 3 ESXi host, thì hãy chỉ ra các tình huống giả sửa lỗi của 1 , 2, 3 esxi host thì các sự cố tương ứng của vcenter HA là gì?
 
 Nếu bạn **chỉ có 3 ESXi host** và triển khai **vCenter HA** theo đúng điều kiện chuẩn (mỗi node Active, Passive, Witness nằm trên một host riêng biệt), thì hệ thống sẽ **rất nhạy cảm với sự cố phần cứng**. Dưới đây là phân tích chi tiết các **tình huống giả định khi 1, 2 hoặc cả 3 host gặp sự cố**, và **ảnh hưởng tương ứng đến hệ thống vCenter HA**:
 
