@@ -10,7 +10,6 @@ Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**,
 
 ![image](https://github.com/user-attachments/assets/c9881b4a-112d-4858-96cf-8007fe08bb4b)
 
-
 ---
 
 ## 🧭 Giải thích từng mô hình
