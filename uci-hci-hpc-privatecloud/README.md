@@ -364,7 +364,8 @@ Dưới đây là bảng **so sánh chi tiết** giữa các nền tảng khi th
 
 Dưới đây là biểu đồ radar so sánh **4 phương án migration từ vSphere** theo các tiêu chí: **chi phí đầu tư**, **khả năng tái sử dụng hạ tầng**, **tương thích công nghệ gốc (vSphere)**, và **khả năng thích ứng công nghệ mới**:
 
-![Biểu đồ so sánh các phương án migration từ vSphere](blob:https://copilot.cloud.microsoft/9d8313e7-053f-4b40-b990-11c53b093bc3)
+![Biểu đồ so sánh các phương án migration từ vSphere]
+![image](https://github.com/user-attachments/assets/45492ef4-bb54-4b02-863d-dfde8d9e9826)
 
 ---
 
@@ -445,8 +446,7 @@ Nếu bạn vẫn tiếp tục sử dụng **VMware vSphere 8.0u3** nhưng muố
 Dưới đây là sơ đồ kiến trúc **hybrid giữa VMware vSphere 8.0u3 và Apache CloudStack**:
 
 ![Sơ đồ kiến trúc hybrid giữa vSphere và CloudStack]
-![image](https://github.com/user-attachments/assets/45492ef4-bb54-4b02-863d-dfde8d9e9826)
-
+![image](https://github.com/PhDLeToanThang/automation/blob/main/uci-hci-hpc-privatecloud/vSphere8x_ApacheCloudStack.drawio.svg)
 
 ---
 
@@ -492,6 +492,3 @@ Dưới đây là sơ đồ kiến trúc **hybrid giữa VMware vSphere 8.0u3 v�
 10. Tắt dần các ESXi host không còn cần thiết.
 11. Tái sử dụng phần cứng cho KVM nếu tương thích.
 12. Tích hợp giám sát, tự động hóa (Prometheus, Ansible...).
-
----
-
