@@ -7,6 +7,7 @@ Verge UCI là gì ? Nutanix HCI là gì ? vSphere Hypervisor là gì ? DATIUM HC
 Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**, **Nutanix HCI**, **vSphere Hypervisor**, **DATIUM HCI**, **HPC & GPU Workstation**, **K8s Cluster**, và **Apache CloudStack**:
 
 ![Sơ đồ so sánh các mô hình hệ thống CNTT]
+
 ![image](https://github.com/user-attachments/assets/c9881b4a-112d-4858-96cf-8007fe08bb4b)
 
 
