@@ -309,3 +309,9 @@ Biểu đồ này thể hiện mức độ đáp ứng theo 4 tiêu chí: hiệu
 Biểu đồ thanh thể hiện tổng điểm (tối đa 40) của từng giải pháp, giúp bạn đánh giá tổng quan và chọn lựa phù hợp.
 
 ![Bảng xếp hạng tổng thể các giải pháp Private Cloud]![image](https://github.com/user-attachments/assets/4f06437e-db62-449c-8f81-a073b5001bd3)
+
+---
+
+Sơ đồ khối quy trình luồng phát triển Logic và các Chương trình đào tạo phát triển phù hợp:
+
+![Sơ đồ khối quy trình phát triển Công nghệ và Chương trình đào tạo tương ứng]![image](https://github.com/PhDLeToanThang/automation/blob/main/uci-hci-hpc-privatecloud/vSphere8x_ApacheCloudStack-TrainingModels.svg)
