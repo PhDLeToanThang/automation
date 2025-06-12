@@ -159,7 +159,7 @@ Dưới đây là **bảng đánh giá định lượng** và **sơ đồ kiến
 
 ### 📈 **Sơ đồ radar đánh giá Top 5 giải pháp Private Cloud**
 
-![Top 5 Private Cloud Solutions Evaluation](blob:https://copilot.cloud.microsoft/ea9380d3-ae64-47b8-812f-2013857fdd9f)
+![Top 5 Private Cloud Solutions Evaluation]![image](https://github.com/user-attachments/assets/1a22f69c-0a88-4e7c-961d-681e606c5797)
 
 **Top 5 giải pháp nổi bật:**
 1. **OpenStack** – mạnh về bảo mật, mở rộng, hybrid cloud.
@@ -174,7 +174,7 @@ Vẽ **sơ đồ kiến trúc tổng thể đa tầng** cho một hệ thống P
 
 Dưới đây là **sơ đồ kiến trúc tổng thể đa tầng** cho một hệ thống Private Cloud lý tưởng trong ngành tài chính – ngân hàng:
 
-![Sơ đồ kiến trúc tổng thể Private Cloud ngành tài chính – ngân hàng](blob:https://copilot.cloud.microsoft/bf7374b1-1895-467b-b1ad-e54853b93b8d)
+![Sơ đồ kiến trúc tổng thể Private Cloud ngành tài chính – ngân hàng]![image](https://github.com/user-attachments/assets/eab2da1a-a1dd-4efd-ad19-4c17ebb7173e)
 
 ---
 
@@ -300,7 +300,7 @@ Dưới đây là hai biểu đồ trực quan giúp bạn dễ dàng so sánh c
 
 Biểu đồ này thể hiện mức độ đáp ứng theo 4 tiêu chí: hiệu quả kinh tế, chi phí license, khả năng nâng cấp từ vSphere, và mức độ phù hợp với ngành tài chính.
 
-![Radar Chart: Top 5 Private Cloud Solutions](blob:https://copilot.cloud.microsoft/8f639d47-a93c-49f1-81c1-66b8f80eff31)
+![Radar Chart: Top 5 Private Cloud Solutions]![image](https://github.com/user-attachments/assets/aebc851e-134c-4339-bd86-a2193f16c88a)
 
 ---
 
@@ -308,6 +308,4 @@ Biểu đồ này thể hiện mức độ đáp ứng theo 4 tiêu chí: hiệu
 
 Biểu đồ thanh thể hiện tổng điểm (tối đa 40) của từng giải pháp, giúp bạn đánh giá tổng quan và chọn lựa phù hợp.
 
-![Bảng xếp hạng tổng thể các giải pháp Private Cloud]
-
----
+![Bảng xếp hạng tổng thể các giải pháp Private Cloud]![image](https://github.com/user-attachments/assets/4f06437e-db62-449c-8f81-a073b5001bd3)
