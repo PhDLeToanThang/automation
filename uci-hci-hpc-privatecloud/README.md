@@ -34,7 +34,7 @@ Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**,
 - Vai trò: Hạ tầng hội tụ mạnh mẽ, tích hợp lưu trữ, tính toán, và ảo hóa.
 - Phần cứng: Yêu cầu cao hơn do sử dụng Controller VM (CVM) – mỗi node cần 16–32GB RAM và nhiều vCPU.
 - OS: Acropolis OS (AHV) hoặc hỗ trợ VMware ESXi, Hyper-V, KVM.
-- Ưu điểm: Quản lý tập trung, tự động hóa cao, phù hợp doanh nghiệp lớn 1 2.
+- Ưu điểm: Quản lý tập trung, tự động hóa cao, phù hợp doanh nghiệp lớn.
 
 ### 🔹 **vSphere Hypervisor**
 - **Vị trí**: On-Prem
@@ -72,11 +72,11 @@ Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**,
 - OS: Linux (CentOS, Rocky), hỗ trợ hypervisor ESXi hoặc KVM.
 - Ưu điểm: Tự động hóa triển khai VM, quản lý tài nguyên tập trung.
 
-###🔹 **vSphere Flings VMware** cho ARM/IoT
+### 🔹 **vSphere Flings VMware** cho ARM/IoT
 - Vai trò: Ảo hóa nhẹ cho thiết bị ARM (Raspberry Pi, Jetson).
 - Phần cứng: Thiết bị ARM64 (Pi 4, NVIDIA Jetson), hỗ trợ ARM, miniGPU
 - OS: ESXi ARM Edition, linux.
-- Ưu điểm: Thử nghiệm IoT, edge computing, Đầo tạo, chạy trong phòng Labs.
+- Ưu điểm: Thử nghiệm IoT, edge computing, Đào tạo, chạy trong phòng Labs.
   
 ---
 
@@ -91,7 +91,7 @@ Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**,
 | HPC GPU | Tính toán cao | Rất cao | Linux | AI, khoa học |
 | K8s + MinIO | Cloud-native | Trung bình | Linux | DevOps, lưu trữ |
 | CloudStack | IaaS | Cao | Linux | Private cloud |
-| vSphere ARM | IoT/Edge | Nhẹ | ESXi ARM | Thử nghiệm, edge |
+| vSphere ARM | IoT/Edge | Nhẹ | ESXi ARM | Đào tạo, edge, Phòng Labs |
 
 ---
 
