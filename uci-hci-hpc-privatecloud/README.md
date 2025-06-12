@@ -14,13 +14,27 @@ Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**,
 
 ## 🧭 Giải thích từng mô hình
 
+### 🔹 **VMware vSphere Hypervisor (Free Licence)**
+- Vai trò: Ảo hóa máy chủ cơ bản, không có tính năng quản lý tập trung (vCenter).
+- Phần cứng: Phù hợp với máy chủ x86_64, yêu cầu CPU hỗ trợ ảo hóa (Intel VT-x/AMD-V).
+- OS: ESXi (bare-metal hypervisor).
+- Ưu điểm: Miễn phí, ổn định, nhưng giới hạn tính năng nâng cao, phù hợp mô hình nhỏ.
+
 ### 🔹 **Verge UCI (Ultraconverged Infrastructure)**
 - **Vị trí**: On-Prem / Edge
 - **Chức năng**: Tích hợp compute, storage, network, virtualization trong một hệ điều hành duy nhất.
+- Vai trò: Hạ tầng hội tụ (HCI) thay thế VMware, tích hợp lưu trữ, mạng và ảo hóa.
+- Phần cứng: Yêu cầu thấp hơn Nutanix; không cần Controller VM, tiết kiệm RAM/CPU, không hỗ trợ ARM.
+- OS: VergeOS – hệ điều hành riêng tích hợp VergeFS.
+- Ưu điểm: Hiệu suất cao, đơn giản hóa vận hành, phù hợp môi trường nhỏ đến vừa.
 
 ### 🔸 **Nutanix HCI (Hyperconverged Infrastructure)**
 - **Vị trí**: On-Prem / Hybrid
 - **Chức năng**: Hạ tầng tích hợp với phần mềm quản lý Prism, hỗ trợ AHV hoặc VMware.
+- Vai trò: Hạ tầng hội tụ mạnh mẽ, tích hợp lưu trữ, tính toán, và ảo hóa.
+- Phần cứng: Yêu cầu cao hơn do sử dụng Controller VM (CVM) – mỗi node cần 16–32GB RAM và nhiều vCPU.
+- OS: Acropolis OS (AHV) hoặc hỗ trợ VMware ESXi, Hyper-V, KVM.
+- Ưu điểm: Quản lý tập trung, tự động hóa cao, phù hợp doanh nghiệp lớn 1 2.
 
 ### 🔹 **vSphere Hypervisor**
 - **Vị trí**: On-Prem
@@ -29,18 +43,55 @@ Dưới đây là sơ đồ so sánh các mô hình hệ thống: **Verge UCI**,
 ### 🔹 **DATIUM HCI**
 - **Vị trí**: On-Prem / Edge
 - **Chức năng**: HCI tích hợp backup, DR, tối ưu lưu trữ.
+- Vai trò: HCI kết hợp giữa máy vật lý và ảo hóa, tối ưu cho môi trường hybrid.
+- Phần cứng: Yêu cầu phần cứng đa dạng (máy chủ vật lý + hạ tầng ảo hóa).
+- OS: Tùy chọn – có thể dùng VMware, KVM, hoặc OS riêng.
+- Ưu điểm: Linh hoạt, phù hợp môi trường chuyển đổi số.
 
 ### 🟣 **HPC & GPU Workstation**
 - **Vị trí**: On-Prem / AI
 - **Chức năng**: Xử lý tính toán cao, AI/ML, mô phỏng khoa học.
+- Vai trò: Tính toán hiệu năng cao (HPC), xử lý AI/ML, mô phỏng khoa học.
+- Phần cứng: GPU mạnh (NVIDIA A100, RTX 6000, v.v.), CPU đa nhân, RAM lớn.
+- OS: Linux (Ubuntu, CentOS, Rocky), đôi khi Windows cho ứng dụng chuyên biệt.
+- Ưu điểm: Hiệu năng cực cao, phù hợp cho ảo hóa vSphere với Passthrough GPU, vGPU, MIX GPU.
 
 ### 🔴 **K8s Cluster (Kubernetes)**
 - **Vị trí**: Cloud-Native / Hybrid
 - **Chức năng**: Điều phối container, microservices, tự động mở rộng.
+- Vai trò: Hạ tầng container hóa, lưu trữ đối tượng S3-compatible.
+- Phần cứng: Nhiều node (VM hoặc bare-metal), SSD/NVMe cho MinIO.
+- OS: Linux (Ubuntu, Debian, CentOS).
+- Ưu điểm: Mở rộng linh hoạt, phù hợp ứng dụng cloud-native.
 
-### 🟤 **Apache CloudStack**
+### 🟤 **Apache CloudStack** trên vSphere/KVM
 - **Vị trí**: Hybrid / Private Cloud
 - **Chức năng**: Quản lý compute, storage, network đa hypervisor, đa vùng.
+- Vai trò: Quản lý đám mây riêng (IaaS), hỗ trợ multi-hypervisor.
+- Phần cứng: Máy chủ vật lý mạnh, lưu trữ chia sẻ (SAN/NFS).
+- OS: Linux (CentOS, Rocky), hỗ trợ hypervisor ESXi hoặc KVM.
+- Ưu điểm: Tự động hóa triển khai VM, quản lý tài nguyên tập trung.
+
+###🔹 **vSphere Flings VMware** cho ARM/IoT
+- Vai trò: Ảo hóa nhẹ cho thiết bị ARM (Raspberry Pi, Jetson).
+- Phần cứng: Thiết bị ARM64 (Pi 4, NVIDIA Jetson), hỗ trợ ARM, miniGPU
+- OS: ESXi ARM Edition, linux.
+- Ưu điểm: Thử nghiệm IoT, edge computing, Đầo tạo, chạy trong phòng Labs.
+  
+---
+
+### 📊 Tổng kết nhanh
+
+| Mô hình | Vai trò chính | Phần cứng | OS/HĐH | Phù hợp với |
+|--------|----------------|-----------|--------|-------------|
+| VergeIO | HCI tích hợp | Nhẹ | VergeOS | SMB, tối ưu chi phí |
+| Nutanix | HCI mạnh mẽ | Cao | AHV/ESXi | Doanh nghiệp lớn |
+| vSphere Free | Ảo hóa cơ bản | Trung bình | ESXi | Lab, SMB |
+| Datium HCI | Hybrid | Linh hoạt | Tùy chọn | Chuyển đổi số |
+| HPC GPU | Tính toán cao | Rất cao | Linux | AI, khoa học |
+| K8s + MinIO | Cloud-native | Trung bình | Linux | DevOps, lưu trữ |
+| CloudStack | IaaS | Cao | Linux | Private cloud |
+| vSphere ARM | IoT/Edge | Nhẹ | ESXi ARM | Thử nghiệm, edge |
 
 ---
 
