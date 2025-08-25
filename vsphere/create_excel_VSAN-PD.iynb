@@ -1,0 +1,665 @@
+import openpyxl
+from openpyxl.styles import Font, Border, Side, Alignment, PatternFill
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.formula.translate import Translator
+from openpyxl.formatting.rule import Rule # <-- Sửa từ FormulaRule thành Rule
+from openpyxl.styles.differential import DifferentialStyle
+import pandas as pd
+from datetime import date
+
+# Define the output Excel file name
+excel_file_name = "vSAN-PD.xlsx"
+
+# --- Helper Functions for Formatting ---
+def apply_header_style(cell):
+    cell.font = Font(bold=True, color="FFFFFF")
+    cell.fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
+    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    cell.border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+
+def apply_sub_header_style(cell):
+    cell.font = Font(bold=True, color="000000")
+    cell.fill = PatternFill(start_color="DCE6F1", end_color="DCE6F1", fill_type="solid")
+    cell.alignment = Alignment(horizontal="left", vertical="center")
+    cell.border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+
+def apply_data_style(cell):
+    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    cell.border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+
+def set_column_widths(ws, column_widths):
+    for i, width in enumerate(column_widths):
+        ws.column_dimensions[get_column_letter(i + 1)].width = width
+
+# --- Create Workbook ---
+wb = openpyxl.Workbook()
+
+# --- 1. Sheet: Thông Tin Đầu Vào ---
+ws_input = wb.active
+ws_input.title = "1. Thông Tin Đầu Vào"
+
+# Headers for Input Sheet
+input_headers = ["Danh Mục", "Trường Đầu Vào", "Input Value", "Đơn Vị", "Loại Dữ Liệu", "Mô Tả", "Ghi Chú"]
+ws_input.append(input_headers)
+for col_idx, header in enumerate(input_headers, 1):
+    cell = ws_input.cell(row=1, column=col_idx)
+    apply_header_style(cell)
+
+# Input Data Structure (Category, Label, Default Value/Formula, Unit, Data Type, Description, Note)
+input_data = [
+    ("1. Thông tin chung", "Tên Dự án", "", "", "Text", "Nhập văn bản", 'VD: "vSAN Sizer for VDI Project"'),
+    ("", "Ngày", f'=TODAY()', "Date", "Ngày", "Tự động lấy ngày hiện tại hoặc nhập thủ công", ""),
+    ("", "Phiên bản Sizer", "v1.0", "Text", "Văn bản", "", 'VD: "v1.0"'),
+    ("2. Yêu cầu Vmware vSAN", "Số lượng ESXi Host ban đầu", 4, "Số", "Số nguyên", "Số lượng ESXi host tối thiểu để bắt đầu cụm vSAN.", "vSAN yêu cầu tối thiểu 3 host, khuyến nghị 4 host trở lên."),
+    ("", "Phiên bản vSAN", "vSAN 8.0", "Text", "Dropdown", "Chọn phiên bản vSAN.", "vSAN 8.0, vSAN 7.0, vSAN 6.7 (chủ yếu là 8.0 cho yêu cầu này)"),
+    ("", "Tỷ lệ tăng trưởng hàng năm (%)", 0.20, "%", "Số thập phân", "Tăng trưởng dự kiến về dung lượng/hiệu năng.", "VD: 20%"),
+    ("3. Yêu cầu về Dung lượng", "Tổng dung lượng dữ liệu cần dùng (sau FTT, Dedupe, Comp)", 10, "TB", "Số thập phân", "Dung lượng hữu dụng thực tế mà các VM cần.", "Quan trọng nhất."),
+    ("", "Bật Deduplication & Compression (Yes/No)", "Yes", "Text", "Dropdown", "Có áp dụng Dedupe và Compression?", "Yes/No"),
+    ("", "Tỷ lệ Dedupe & Compression (ví dụ: 2.0)", 2.0, "Số thập phân", "Số thập phân", "Tỷ lệ nén dữ liệu ước tính (ví dụ: 2.0 cho 2:1)", ""),
+    ("4. Chính sách lưu trữ", "FTT (Failure To Tolerate)", 1, "Số", "Số nguyên", "Số lượng lỗi host/disk có thể chịu đựng.", "VD: 1 (cho RAID1/RAID5), 2 (cho RAID1/RAID6)"),
+    ("", "Loại RAID cho Capacity Tier", "RAID1", "Text", "Dropdown", "Chính sách RAID cho vSAN.", "RAID1, RAID5, RAID6"),
+    ("5. Yêu cầu Hiệu năng", "Tổng số IOPS cần thiết", 10000, "IOPS", "Số nguyên", "Tổng số thao tác đọc/ghi mà ứng dụng yêu cầu.", "Từ yêu cầu ứng dụng/database."),
+    ("", "Tổng thông lượng cần thiết", 1000, "MB/s", "Số thập phân", "Tổng lượng dữ liệu (đọc/ghi) cần truyền tải.", "Từ yêu cầu ứng dụng/database."),
+    ("", "Độ trễ mục tiêu (Target Latency)", 5, "ms", "Số thập phân", "Độ trễ tối đa chấp nhận được cho các tác vụ lưu trữ.", "VD: 5ms."),
+    ("", "Yêu cầu QoS (Quality of Service)", "No specific QoS requirement", "Text", "Văn bản/Yes/No", "Các yêu cầu cụ thể về ưu tiên lưu lượng.", ""),
+    ("6. Cấu hình phần cứng đề xuất", "Model CPU", "Intel Xeon Gold 6330", "Text", "Dropdown", "", ""),
+    ("", "Số lượng CPU trên mỗi Host", 2, "Số", "Số nguyên", "Số lượng socket CPU trên mỗi host vật lý.", "Thường là 2 socket"),
+    ("", "RAM/Host (GB)", 256, "GB", "Số nguyên", "Tổng dung lượng RAM trên mỗi host.", ""),
+    ("", "RAM Module Size (GB)", 32, "Số", "Dropdown", "Kích thước của mỗi module RAM.", "16, 32, 64,..."),
+    ("", "Loại Cache Device", "NVMe SSD", "Text", "Dropdown", "", ""),
+    ("", "Loại Capacity Device", "SAS SSD", "Text", "Dropdown", "", ""),
+    ("7. Cấu hình Network", "Tốc độ Network Adapter (GbE)", 25, "GbE", "Dropdown", "", ""),
+    ("", "Số cổng Network Adapter trên mỗi Host", 2, "Số", "Số nguyên", "", ""),
+    ("8. Licenses", "Phiên bản License vSAN", "Advanced", "Text", "Dropdown", "", ""),
+    ("", "Phiên bản License vSphere", "Enterprise Plus", "Text", "Dropdown", "", ""),
+]
+
+# Write data to sheet 1. Thông Tin Đầu Vào and apply formatting/data validation
+row_num = 2
+for row_data in input_data:
+    category, label, value, unit, data_type, description, note = row_data
+    
+    ws_input.cell(row=row_num, column=1, value=category).font = Font(bold=True) if category else Font()
+    ws_input.cell(row=row_num, column=2, value=label)
+    
+    if data_type == "Ngày" and isinstance(value, str) and value.startswith('='):
+        ws_input.cell(row=row_num, column=3, value=value)
+    else:
+        ws_input.cell(row=row_num, column=3, value=value)
+    
+    ws_input.cell(row=row_num, column=4, value=unit)
+    ws_input.cell(row=row_num, column=5, value=data_type)
+    ws_input.cell(row=row_num, column=6, value=description)
+    ws_input.cell(row=row_num, column=7, value=note)
+
+    # Apply data style to value, unit, data_type, description, note
+    for col_idx in range(1, len(input_headers) + 1):
+        if col_idx == 1 and category: # Skip bold for empty category cells
+             apply_sub_header_style(ws_input.cell(row=row_num, column=col_idx))
+        elif col_idx == 1 and not category:
+            apply_data_style(ws_input.cell(row=row_num, column=col_idx))
+        else:
+            apply_data_style(ws_input.cell(row=row_num, column=col_idx))
+
+
+    # Add Data Validation
+    if label == "Phiên bản vSAN":
+        dv = DataValidation(type="list", formula1='"vSAN 8.0,vSAN 7.0,vSAN 6.7"', allow_blank=True)
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Bật Deduplication & Compression (Yes/No)":
+        dv = DataValidation(type="list", formula1='"Yes,No"', allow_blank=True)
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Loại RAID cho Capacity Tier":
+        dv = DataValidation(type="list", formula1='"RAID1,RAID5,RAID6"', allow_blank=True)
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Model CPU":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$4:$A$5")', allow_blank=True) # Adjust range as needed
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "RAM Module Size (GB)":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$13:$A$15")', allow_blank=True) # Adjust range
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Loại Cache Device":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$22:$A$24")', allow_blank=True) # Adjust range
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Loại Capacity Device":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$31:$A$34")', allow_blank=True) # Adjust range
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Tốc độ Network Adapter (GbE)":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$40:$A$43")', allow_blank=True) # Adjust range
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Phiên bản License vSAN":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$49:$A$52")', allow_blank=True) # Adjust range
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+    elif label == "Phiên bản License vSphere":
+        dv = DataValidation(type="list", formula1='=INDIRECT("\'2. Dữ Liệu Tham Chiếu\'!$A$55:$A$56")', allow_blank=True) # Adjust range
+        ws_input.add_data_validation(dv)
+        dv.add(ws_input.cell(row=row_num, column=3))
+
+    row_num += 1
+
+# Set column widths for Input sheet
+set_column_widths(ws_input, [20, 40, 20, 10, 15, 40, 50])
+
+
+# --- 2. Sheet: Dữ Liệu Tham Chiếu ---
+ws_ref = wb.create_sheet("2. Dữ Liệu Tham Chiếu")
+
+# A. Bảng Cấu hình CPU
+cpu_data = {
+    "CPU Model": ["Intel Xeon Gold 6330", "AMD EPYC 75F3"],
+    "Cores": [28, 32],
+    "Threads": [56, 64],
+    "Base Clock (GHz)": [2.1, 2.95],
+    "vSAN CPU Overhead (%)": [0.10, 0.10],
+    "Cost ($)": [3500, 4000],
+    "Power (Watts)": [200, 280],
+}
+df_cpu = pd.DataFrame(cpu_data)
+ws_ref.append(["A. Bảng Cấu hình CPU"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_cpu.columns.tolist())
+for col_idx, header in enumerate(df_cpu.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_cpu.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+cpu_start_row = 3 # For VLOOKUP
+
+
+# B. Bảng Cấu hình RAM
+ram_data = {
+    "RAM Module Size (GB)": [16, 32, 64],
+    "Cost ($)": [100, 180, 300],
+    "Power (Watts)": [5, 8, 12],
+}
+df_ram = pd.DataFrame(ram_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["B. Bảng Cấu hình RAM"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_ram.columns.tolist())
+for col_idx, header in enumerate(df_ram.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_ram.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+ram_start_row = ws_ref.max_row - len(df_ram) # For VLOOKUP
+
+
+# C. Bảng Cấu hình Cache Device
+cache_data = {
+    "Loại Cache Device": ["NVMe SSD", "NVMe SSD", "SAS SSD"],
+    "Dung lượng (GB)": [800, 1600, 400],
+    "IOPS (Read)": [300000, 500000, 70000],
+    "IOPS (Write)": [150000, 250000, 30000],
+    "Throughput (MB/s)": [2500, 4000, 700],
+    "Tuổi thọ (TBW)": [3000, 6000, 1500],
+    "Cost ($)": [800, 1500, 300],
+    "Power (Watts)": [15, 20, 10],
+}
+df_cache = pd.DataFrame(cache_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["C. Bảng Cấu hình Cache Device"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_cache.columns.tolist())
+for col_idx, header in enumerate(df_cache.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_cache.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+cache_start_row = ws_ref.max_row - len(df_cache) # For VLOOKUP
+
+
+# D. Bảng Cấu hình Capacity Device
+capacity_data = {
+    "Loại Capacity Device": ["SAS SSD", "SAS SSD", "SATA SSD", "HDD"],
+    "Dung lượng (TB)": [1.92, 3.84, 7.68, 10],
+    "IOPS (Read)": [5000, 7000, 6000, 150],
+    "IOPS (Write)": [2000, 3000, 2500, 80],
+    "Throughput (MB/s)": [500, 700, 600, 180],
+    "Cost ($)": [300, 500, 700, 200],
+    "Power (Watts)": [10, 12, 15, 8],
+}
+df_capacity = pd.DataFrame(capacity_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["D. Bảng Cấu hình Capacity Device"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_capacity.columns.tolist())
+for col_idx, header in enumerate(df_capacity.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_capacity.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+capacity_start_row = ws_ref.max_row - len(df_capacity) # For VLOOKUP
+
+
+# E. Bảng Cấu hình Network Adapter
+network_data = {
+    "Tốc độ (GbE)": [10, 25, 40, 100],
+    "Số cổng": [2, 2, 2, 2],
+    "Cost ($)": [300, 500, 800, 1500],
+    "Power (Watts)": [10, 15, 20, 30],
+}
+df_network = pd.DataFrame(network_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["E. Bảng Cấu hình Network Adapter"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_network.columns.tolist())
+for col_idx, header in enumerate(df_network.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_network.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+network_start_row = ws_ref.max_row - len(df_network) # For VLOOKUP
+
+
+# F. Bảng Giá License vSAN
+vsan_license_data = {
+    "Phiên bản License": ["Standard", "Advanced", "Enterprise", "Enterprise Plus"],
+    "Cost ($/Socket)": [1500, 2500, 4000, 6000],
+}
+df_vsan_license = pd.DataFrame(vsan_license_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["F. Bảng Giá License vSAN"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_vsan_license.columns.tolist())
+for col_idx, header in enumerate(df_vsan_license.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_vsan_license.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+vsan_license_start_row = ws_ref.max_row - len(df_vsan_license) # For VLOOKUP
+
+
+# G. Bảng Giá License vSphere
+vsphere_license_data = {
+    "Phiên bản License": ["Standard", "Enterprise Plus"],
+    "Cost ($/Socket)": [800, 2000],
+}
+df_vsphere_license = pd.DataFrame(vsphere_license_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["G. Bảng Giá License vSphere"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_vsphere_license.columns.tolist())
+for col_idx, header in enumerate(df_vsphere_license.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_vsphere_license.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+vsphere_license_start_row = ws_ref.max_row - len(df_vsphere_license) # For VLOOKUP
+
+
+# H. Bảng Hệ số FTT & RAID
+ftt_raid_data = {
+    "FTT": [1, 1, 2, 2],
+    "RAID Level": ["RAID1", "RAID5", "RAID1", "RAID6"],
+    "Storage Multiplier": [2.0, 1.33, 3.0, 1.5],
+}
+df_ftt_raid = pd.DataFrame(ftt_raid_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["H. Bảng Hệ số FTT & RAID"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_ftt_raid.columns.tolist())
+for col_idx, header in enumerate(df_ftt_raid.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_ftt_raid.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+ftt_raid_start_row = ws_ref.max_row - len(df_ftt_raid) # For VLOOKUP
+
+
+# I. Bảng Chi phí chung
+common_cost_data = {
+    "Mục chi phí": [
+        "Chi phí cơ bản cho một ESXi Host (chassis, PSU, v.v.)",
+        "Chi phí bảo trì hàng năm (% Capex phần cứng)",
+        "Chi phí điện (Giá/kWh)",
+        "Chi phí làm mát (% chi phí điện)",
+        "vSAN Metadata Overhead (%)",
+        "Dung lượng dự phòng (Slack Space %)",
+        "Năm khấu hao (TCO)",
+    ],
+    "Giá trị": [1500, 0.18, 0.15, 0.30, 0.10, 0.25, 5],
+    "Đơn vị": ["USD", "%", "USD/kWh", "%", "%", "%", "Năm"],
+    "Mô tả": [
+        "Chi phí nền tảng cho mỗi máy chủ, không bao gồm CPU/RAM/Disk/NIC",
+        "Ví dụ: 18% tổng chi phí phần cứng ban đầu",
+        "Giá điện trung bình",
+        "Chi phí làm mát ước tính so với chi phí điện năng tiêu thụ",
+        "Dung lượng cần thiết cho metadata của vSAN (thường 5-15%)",
+        "Dung lượng trống để đảm bảo hoạt động tối ưu và tăng trưởng ngắn hạn",
+        "Số năm tính tổng chi phí sở hữu (TCO)",
+    ],
+}
+df_common_cost = pd.DataFrame(common_cost_data)
+ws_ref.append([]) # Blank row
+ws_ref.append(["I. Bảng Chi phí chung (Cố định/Tính theo %)"])
+ws_ref.cell(row=ws_ref.max_row, column=1).font = Font(bold=True)
+ws_ref.append(df_common_cost.columns.tolist())
+for col_idx, header in enumerate(df_common_cost.columns, 1):
+    apply_header_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+for r_idx, row in df_common_cost.iterrows():
+    ws_ref.append(row.tolist())
+    for col_idx in range(1, len(row) + 1):
+        apply_data_style(ws_ref.cell(row=ws_ref.max_row, column=col_idx))
+common_cost_start_row = ws_ref.max_row - len(df_common_cost) # For VLOOKUP
+
+
+# Set column widths for Reference sheet
+set_column_widths(ws_ref, [30, 15, 15, 15, 15, 15, 15, 15, 40]) # Adjusted for more columns
+
+
+# --- 3. Sheet: Tính Toán Sizing ---
+ws_sizing = wb.create_sheet("3. Tính Toán Sizing")
+
+sizing_headers = ["Mục tính toán", "Kết quả", "Đơn vị", "Ghi chú"]
+ws_sizing.append(sizing_headers)
+for col_idx, header in enumerate(sizing_headers, 1):
+    apply_header_style(ws_sizing.cell(row=1, column=col_idx))
+
+# Cell references from 1. Thông Tin Đầu Vào sheet (relative to my new layout)
+INPUT_NUM_ESXI_HOSTS = 'C7' # Số lượng ESXi Host ban đầu
+INPUT_TOTAL_DATA_CAPACITY = 'C11' # Tổng dung lượng dữ liệu cần dùng
+INPUT_DEDUPE_COMP_ENABLED = 'C12' # Bật Deduplication & Compression (Yes/No)
+INPUT_DEDUPE_COMP_RATIO = 'C13' # Tỷ lệ Dedupe & Compression
+INPUT_FTT = 'C15' # FTT
+INPUT_RAID_TYPE = 'C16' # Loại RAID cho Capacity Tier
+INPUT_REQUIRED_IOPS = 'C18' # Tổng số IOPS cần thiết
+INPUT_REQUIRED_THROUGHPUT = 'C19' # Tổng thông lượng cần thiết
+INPUT_TARGET_LATENCY = 'C20' # Độ trễ mục tiêu
+INPUT_CPU_MODEL = 'C23' # Model CPU
+INPUT_CPU_PER_HOST = 'C24' # Số lượng CPU trên mỗi Host
+INPUT_RAM_PER_HOST = 'C25' # RAM/Host (GB)
+INPUT_RAM_MODULE_SIZE = 'C26' # RAM Module Size (GB)
+INPUT_CACHE_DEVICE_TYPE = 'C27' # Loại Cache Device
+INPUT_CAPACITY_DEVICE_TYPE = 'C28' # Loại Capacity Device
+INPUT_NETWORK_SPEED = 'C29' # Tốc độ Network Adapter (GbE)
+INPUT_NETWORK_PORTS_PER_HOST = 'C30' # Số cổng Network Adapter trên mỗi Host
+INPUT_VSAN_LICENSE = 'C32' # Phiên bản License vSAN
+INPUT_VSPHERE_LICENSE = 'C33' # Phiên bản License vSphere
+
+
+# Cell references from 2. Dữ Liệu Tham Chiếu sheet (using actual ranges)
+REF_CPU_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{cpu_start_row}:G{cpu_start_row + len(df_cpu) - 1}"
+REF_RAM_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{ram_start_row}:C{ram_start_row + len(df_ram) - 1}"
+REF_CACHE_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{cache_start_row}:H{cache_start_row + len(df_cache) - 1}"
+REF_CAPACITY_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{capacity_start_row}:G{capacity_start_row + len(df_capacity) - 1}"
+REF_NETWORK_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{network_start_row}:D{network_start_row + len(df_network) - 1}"
+REF_VSAN_LICENSE_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{vsan_license_start_row}:B{vsan_license_start_row + len(df_vsan_license) - 1}"
+REF_VSPHERE_LICENSE_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{vsphere_license_start_row}:B{vsphere_license_start_row + len(df_vsphere_license) - 1}"
+REF_FTT_RAID_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{ftt_raid_start_row}:C{ftt_raid_start_row + len(df_ftt_raid) - 1}"
+REF_COMMON_COST_TABLE = f"'2. Dữ Liệu Tham Chiếu'!A{common_cost_start_row}:D{common_cost_start_row + len(df_common_cost) - 1}"
+
+# Common Cost VLOOKUP references
+COMMON_COST_HOST_CHASSIS = f'VLOOKUP("Chi phí cơ bản cho một ESXi Host (chassis, PSU, v.v.)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+COMMON_COST_MAINTENANCE_PCT = f'VLOOKUP("Chi phí bảo trì hàng năm (% Capex phần cứng)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+COMMON_COST_ELECTRICITY_PRICE = f'VLOOKUP("Chi phí điện (Giá/kWh)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+COMMON_COST_COOLING_PCT = f'VLOOKUP("Chi phí làm mát (% chi phí điện)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+COMMON_COST_METADATA_OVERHEAD = f'VLOOKUP("vSAN Metadata Overhead (%)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+COMMON_COST_SLACK_SPACE = f'VLOOKUP("Dung lượng dự phòng (Slack Space %)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+COMMON_COST_TCO_YEARS = f'VLOOKUP("Năm khấu hao (TCO)", {REF_COMMON_COST_TABLE}, 2, FALSE)'
+
+
+sizing_data = [
+    # A. Sizing Dung lượng
+    ("A. Sizing Dung lượng (Capacity Sizing)", "", "", ""),
+    ("Dung lượng thô cần thiết (trước FTT, sau Dedupe/Comp)", f'=IF(\'1. Thông Tin Đầu Vào\'!{INPUT_DEDUPE_COMP_ENABLED}="Yes", \'1. Thông Tin Đầu Vào\'!{INPUT_TOTAL_DATA_CAPACITY} / \'1. Thông Tin Đầu Vào\'!{INPUT_DEDUPE_COMP_RATIO}, \'1. Thông Tin Đầu Vào\'!{INPUT_TOTAL_DATA_CAPACITY})', "TB", ""),
+    ("Hệ số FTT/RAID", f'=VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_FTT}&\'1. Thông Tin Đầu Vào\'!{INPUT_RAID_TYPE}, {REF_FTT_RAID_TABLE}, 3, FALSE)', "", ""),
+    ("Dung lượng thô cần thiết (sau FTT)", f'=B3 * B4', "TB", ""), # B3 = Raw Capacity Needed - pre FTT, B4 = FTT Multiplier
+    ("Dung lượng cho vSAN Metadata", f'=B5 * {COMMON_COST_METADATA_OVERHEAD}', "TB", ""), # B5 = Raw Capacity Needed - post FTT
+    ("Tổng Dung lượng thô cần thiết", f'=B5 + B6', "TB", ""), # B5 = Raw Capacity Needed - post FTT, B6 = Metadata Capacity
+    ("Tổng Dung lượng thô cần thiết (kèm dự phòng)", f'=B7 * (1 + {COMMON_COST_SLACK_SPACE})', "TB", ""), # B7 = Total Raw Capacity Required
+    ("Số lượng Capacity Disks trên mỗi Host", f'=CEILING.MATH((B8 / \'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS}) / (VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CAPACITY_DEVICE_TYPE}, {REF_CAPACITY_TABLE}, 2, FALSE)), 1)', "Đĩa", ""), # B8 = Total Raw Capacity Required (with slack)
+    ("Tổng số lượng Capacity Disks", f'=B9 * \'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS}', "Đĩa", ""), # B9 = Capacity Disks per Host
+    ("", "", "", ""), # Blank row
+
+    # B. Sizing Cache
+    ("B. Sizing Cache (Cache Sizing)", "", "", ""),
+    ("Kích thước Cache Tier cần thiết", f'=B5 * 0.10', "TB", "10% của Raw Capacity Needed (sau FTT)"), # B5 = Raw Capacity Needed - post FTT
+    ("Số lượng Cache Device trên mỗi Host", f'=CEILING.MATH((B12 / \'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS}) / (VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CACHE_DEVICE_TYPE}, {REF_CACHE_TABLE}, 2, FALSE)/1024), 1)', "Thiết bị", "Chia cho 1024 để chuyển GB sang TB"), # B12 = Cache Tier Size
+    ("Tổng số lượng Cache Devices", f'=B13 * \'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS}', "Thiết bị", ""), # B13 = Cache Device per Host
+    ("", "", "", ""), # Blank row
+
+    # C. Sizing Hiệu năng
+    ("C. Sizing Hiệu năng (Performance Sizing)", "", "", ""),
+    ("IOPS tổng cộng đạt được", f'=SUMPRODUCT(VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CACHE_DEVICE_TYPE}, {REF_CACHE_TABLE}, {{3,4}}, FALSE), {{0.7,0.3}}) * B14 + SUMPRODUCT(VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CAPACITY_DEVICE_TYPE}, {REF_CAPACITY_TABLE}, {{3,4}}, FALSE), {{0.7,0.3}}) * B10', "IOPS", "Giả định 70% Read, 30% Write"), # B14 = Total Cache Devices, B10 = Total Capacity Disks
+    ("Thông lượng tổng cộng đạt được", f'=VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CACHE_DEVICE_TYPE}, {REF_CACHE_TABLE}, 5, FALSE) * B14 + VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CAPACITY_DEVICE_TYPE}, {REF_CAPACITY_TABLE}, 5, FALSE) * B10', "MB/s", ""), # B14 = Total Cache Devices, B10 = Total Capacity Disks
+    ("Latency ước tính (ms)", f'=IF(B16 >= \'1. Thông Tin Đầu Vào\'!{INPUT_REQUIRED_IOPS}, \'1. Thông Tin Đầu Vào\'!{INPUT_TARGET_LATENCY} * (\'1. Thông Tin Đầu Vào\'!{INPUT_REQUIRED_IOPS} / B16), \'1. Thông Tin Đầu Vào\'!{INPUT_TARGET_LATENCY})', "ms", "Ước tính thô"), # B16 = Achieved IOPS
+    ("", "", "", ""), # Blank row
+
+    # D. Sizing Network
+    ("D. Sizing Network", "", "", ""),
+    ("Băng thông vSAN cần thiết mỗi Host", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_REQUIRED_THROUGHPUT} / \'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS}', "MB/s", "Tổng BW/Host"),
+    ("Tổng Băng thông Network đạt được mỗi Host", f'=VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_NETWORK_SPEED}, {REF_NETWORK_TABLE}, 1, FALSE) * 125 * \'1. Thông Tin Đầu Vào\'!{INPUT_NETWORK_PORTS_PER_HOST}', "MB/s", "1 GbE = 125 MB/s"),
+    ("", "", "", ""), # Blank row
+
+    # E. Sizing Compute
+    ("E. Sizing Compute (CPU & RAM)", "", "", ""),
+    ("Tổng số CPU cần thiết (Total Sockets)", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS} * \'1. Thông Tin Đầu Vào\'!{INPUT_CPU_PER_HOST}', "Sockets", ""),
+    ("Tổng RAM cần thiết (Total RAM GB)", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS} * \'1. Thông Tin Đầu Vào\'!{INPUT_RAM_PER_HOST}', "GB", ""),
+    ("Total Cores", f'=B22 * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CPU_MODEL}, {REF_CPU_TABLE}, 2, FALSE)', "Cores", ""), # B22 = Total Sockets
+]
+
+current_row = 2
+for row_data in sizing_data:
+    label, formula, unit, note = row_data
+    if label.startswith("A.") or label.startswith("B.") or label.startswith("C.") or label.startswith("D.") or label.startswith("E."):
+        ws_sizing.cell(row=current_row, column=1, value=label).font = Font(bold=True)
+        for col_idx in range(1, len(sizing_headers) + 1):
+            apply_sub_header_style(ws_sizing.cell(row=current_row, column=col_idx))
+    else:
+        ws_sizing.cell(row=current_row, column=1, value=label)
+        ws_sizing.cell(row=current_row, column=2, value=formula)
+        ws_sizing.cell(row=current_row, column=3, value=unit)
+        ws_sizing.cell(row=current_row, column=4, value=note)
+        for col_idx in range(1, len(sizing_headers) + 1):
+            apply_data_style(ws_sizing.cell(row=current_row, column=col_idx))
+    current_row += 1
+
+# Set column widths for Sizing sheet
+set_column_widths(ws_sizing, [60, 20, 10, 50])
+
+
+# --- 4. Sheet: Tổng Kết Chi Phí ---
+ws_cost = wb.create_sheet("4. Tổng Kết Chi Phí")
+
+cost_headers = ["Mục chi phí", "Giá trị", "Đơn vị"]
+ws_cost.append(cost_headers)
+for col_idx, header in enumerate(cost_headers, 1):
+    apply_header_style(ws_cost.cell(row=1, column=col_idx))
+
+# Cell references from 3. Tính Toán Sizing sheet
+SIZING_TOTAL_SOCKETS = 'B22' # Total Sockets
+SIZING_TOTAL_RAM_GB = 'B23' # Total RAM GB
+SIZING_TOTAL_CACHE_DEVICES = 'B14' # Tổng số lượng Cache Devices
+SIZING_TOTAL_CAPACITY_DISKS = 'B10' # Tổng số lượng Capacity Disks
+SIZING_TOTAL_POWER_CONSUMPTION_WATTS_FORMULA_PART_CPU = f'VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CPU_MODEL}, {REF_CPU_TABLE}, 7, FALSE)' # CPU Power column is 7 (A:G)
+SIZING_TOTAL_POWER_CONSUMPTION_WATTS_FORMULA_PART_RAM = f'VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_RAM_MODULE_SIZE}, {REF_RAM_TABLE}, 3, FALSE) / \'1. Thông Tin Đầu Vào\'!{INPUT_RAM_MODULE_SIZE}' # RAM Power column is 3 (A:C)
+
+cost_data = [
+    # A. Chi phí đầu tư (CAPEX)
+    ("A. Chi phí đầu tư (CAPEX)", "", ""),
+    ("Chi phí ESXi Hosts (Chassis)", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS} * {COMMON_COST_HOST_CHASSIS}', "USD"),
+    ("Chi phí CPU", f'=\'3. Tính Toán Sizing\'!{SIZING_TOTAL_SOCKETS} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CPU_MODEL}, {REF_CPU_TABLE}, 6, FALSE)', "USD"),
+    ("Chi phí RAM", f'=\'3. Tính Toán Sizing\'!{SIZING_TOTAL_RAM_GB} * (VLOOKUP(MIN(IF({REF_RAM_TABLE}!A:A>=\'1. Thông Tin Đầu Vào\'!{INPUT_RAM_MODULE_SIZE}, {REF_RAM_TABLE}!A:A)), {REF_RAM_TABLE}, 2, FALSE) / \'1. Thông Tin Đầu Vào\'!{INPUT_RAM_MODULE_SIZE})', "USD"),
+    ("Chi phí Cache Disks", f'=\'3. Tính Toán Sizing\'!{SIZING_TOTAL_CACHE_DEVICES} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CACHE_DEVICE_TYPE}, {REF_CACHE_TABLE}, 8, FALSE)', "USD"),
+    ("Chi phí Capacity Disks", f'=\'3. Tính Toán Sizing\'!{SIZING_TOTAL_CAPACITY_DISKS} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CAPACITY_DEVICE_TYPE}, {REF_CAPACITY_TABLE}, 6, FALSE)', "USD"),
+    ("Chi phí Network Adapters", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS} * \'1. Thông Tin Đầu Vào\'!{INPUT_NETWORK_PORTS_PER_HOST} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_NETWORK_SPEED}, {REF_NETWORK_TABLE}, 3, FALSE)', "USD"),
+    ("Tổng Chi phí Phần cứng (Total Hardware CAPEX)", f'=SUM(B3:B8)', "USD"),
+    ("", "", ""),
+    ("Chi phí License vSAN", f'=\'3. Tính Toán Sizing\'!{SIZING_TOTAL_SOCKETS} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_VSAN_LICENSE}, {REF_VSAN_LICENSE_TABLE}, 2, FALSE)', "USD"),
+    ("Chi phí License vSphere", f'=\'3. Tính Toán Sizing\'!{SIZING_TOTAL_SOCKETS} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_VSPHERE_LICENSE}, {REF_VSPHERE_LICENSE_TABLE}, 2, FALSE)', "USD"),
+    ("Tổng Chi phí Software (Total Software CAPEX)", "=SUM(B11:B12)", "USD"),
+    ("", "", ""),
+    ("Tổng CAPEX (Total Capital Expenditure)", "=B9+B13", "USD"),
+    ("", "", ""),
+
+    # B. Chi phí hoạt động (OPEX) hàng năm
+    ("B. Chi phí hoạt động (OPEX) hàng năm", "", ""),
+    ("Chi phí bảo trì & hỗ trợ", f'=B9 * {COMMON_COST_MAINTENANCE_PCT}', "USD"), # B9 = Total Hardware CAPEX
+    ("Công suất tiêu thụ tổng cộng (Watts)", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS} * {SIZING_TOTAL_POWER_CONSUMPTION_WATTS_FORMULA_PART_CPU} + \'3. Tính Toán Sizing\'!{SIZING_TOTAL_RAM_GB} * ({SIZING_TOTAL_POWER_CONSUMPTION_WATTS_FORMULA_PART_RAM}) + \'3. Tính Toán Sizing\'!{SIZING_TOTAL_CACHE_DEVICES} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CACHE_DEVICE_TYPE}, {REF_CACHE_TABLE}, 9, FALSE) + \'3. Tính Toán Sizing\'!{SIZING_TOTAL_CAPACITY_DISKS} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_CAPACITY_DEVICE_TYPE}, {REF_CAPACITY_TABLE}, 7, FALSE) + \'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS} * \'1. Thông Tin Đầu Vào\'!{INPUT_NETWORK_PORTS_PER_HOST} * VLOOKUP(\'1. Thông Tin Đầu Vào\'!{INPUT_NETWORK_SPEED}, {REF_NETWORK_TABLE}, 4, FALSE)', "Watts",),
+    ("Chi phí điện hàng năm", f'=(B19 / 1000) * 24 * 365 * {COMMON_COST_ELECTRICITY_PRICE}', "USD"), # B19 = Total Power Consumption Watts
+    ("Chi phí làm mát", f'=B20 * {COMMON_COST_COOLING_PCT}', "USD"), # B20 = Annual Electricity Cost
+    ("Tổng OPEX hàng năm (Total Annual Operational Expenditure)", "=SUM(B18,B20,B21)", "USD"),
+    ("", "", ""),
+
+    # C. Tổng chi phí sở hữu (TCO)
+    ("C. Tổng chi phí sở hữu (TCO - Total Cost of Ownership)", "", ""),
+    ("TCO trong X năm", f'=B15 + (B22 * {COMMON_COST_TCO_YEARS})', "USD"), # B15 = Total CAPEX, B22 = Total Annual OPEX
+]
+
+current_row = 2
+for row_data in cost_data:
+    label, formula, unit = row_data
+    if label.startswith("A.") or label.startswith("B.") or label.startswith("C."):
+        ws_cost.cell(row=current_row, column=1, value=label).font = Font(bold=True)
+        for col_idx in range(1, len(cost_headers) + 1):
+            apply_sub_header_style(ws_cost.cell(row=current_row, column=col_idx))
+    else:
+        ws_cost.cell(row=current_row, column=1, value=label)
+        ws_cost.cell(row=current_row, column=2, value=formula)
+        ws_cost.cell(row=current_row, column=3, value=unit)
+        for col_idx in range(1, len(cost_headers) + 1):
+            apply_data_style(ws_cost.cell(row=current_row, column=col_idx))
+    current_row += 1
+
+# Set column widths for Cost sheet
+set_column_widths(ws_cost, [60, 20, 10])
+
+
+# --- 5. Sheet: Dashboard ---
+ws_dashboard = wb.create_sheet("5. Dashboard")
+
+dashboard_key_metrics_headers = ["Số Liệu Chính", "Giá trị", "Đơn vị", "Đánh giá"]
+ws_dashboard.append(dashboard_key_metrics_headers)
+for col_idx, header in enumerate(dashboard_key_metrics_headers, 1):
+    apply_header_style(ws_dashboard.cell(row=1, column=col_idx))
+
+# Cell references for Dashboard
+# From Sizing sheet
+SIZING_RAW_CAP_POST_FTT = 'B5' # Dung lượng thô cần thiết (sau FTT)
+SIZING_TOTAL_RAW_CAP_REQ = 'B7' # Tổng Dung lượng thô cần thiết
+SIZING_ACHIEVED_IOPS = 'B16' # IOPS tổng cộng đạt được
+SIZING_ACHIEVED_THROUGHPUT = 'B17' # Thông lượng tổng cộng đạt được
+SIZING_RECOMMENDED_HOSTS = 'C7' # Số lượng ESXi Host ban đầu (using input for now, ideally calculated)
+
+# From Cost sheet
+COST_TOTAL_CAPEX = 'B15' # Tổng CAPEX
+COST_TOTAL_ANNUAL_OPEX = 'B22' # Tổng OPEX hàng năm
+COST_TCO_X_YEARS = 'B25' # TCO trong X năm
+
+dashboard_key_metrics_data = [
+    ("Số lượng ESXi Hosts được đề xuất", f'=\'1. Thông Tin Đầu Vào\'!{INPUT_NUM_ESXI_HOSTS}', "Hosts", ""), # Using input for now, could be more complex calc
+    ("Tổng Dung lượng hữu dụng (Usable Capacity)", f'=( \'3. Tính Toán Sizing\'!{SIZING_RAW_CAP_POST_FTT} / (1 + {COMMON_COST_SLACK_SPACE}) ) - ( \'3. Tính Toán Sizing\'!{SIZING_RAW_CAP_POST_FTT} * {COMMON_COST_METADATA_OVERHEAD} )', "TB", ""),
+    ("Tổng IOPS đạt được", f'=\'3. Tính Toán Sizing\'!{SIZING_ACHIEVED_IOPS}', "IOPS", ""),
+    ("Tổng Throughput đạt được", f'=\'3. Tính Toán Sizing\'!{SIZING_ACHIEVED_THROUGHPUT}', "MB/s", ""),
+    ("Tổng CAPEX", f'=\'4. Tổng Kết Chi Phí\'!{COST_TOTAL_CAPEX}', "USD", ""),
+    ("Tổng OPEX hàng năm", f'=\'4. Tổng Kết Chi Phí\'!{COST_TOTAL_ANNUAL_OPEX}', "USD", ""),
+    ("TCO trong X năm", f'=\'4. Tổng Kết Chi Phí\'!{COST_TCO_X_YEARS}', "USD", ""),
+    ("Đánh giá IOPS", f'=IF(\'3. Tính Toán Sizing\'!{SIZING_ACHIEVED_IOPS} >= \'1. Thông Tin Đầu Vào\'!{INPUT_REQUIRED_IOPS}, "Đạt yêu cầu", "Không đạt yêu cầu")', "", ""),
+    ("Đánh giá Throughput", f'=IF(\'3. Tính Toán Sizing\'!{SIZING_ACHIEVED_THROUGHPUT} >= \'1. Thông Tin Đầu Vào\'!{INPUT_REQUIRED_THROUGHPUT}, "Đạt yêu cầu", "Không đạt yêu cầu")', "", ""),
+]
+
+current_row = 2
+for row_data in dashboard_key_metrics_data:
+    label, value_formula, unit, assessment_formula = row_data
+    ws_dashboard.cell(row=current_row, column=1, value=label)
+    ws_dashboard.cell(row=current_row, column=2, value=value_formula)
+    ws_dashboard.cell(row=current_row, column=3, value=unit)
+    ws_dashboard.cell(row=current_row, column=4, value=assessment_formula)
+    for col_idx in range(1, len(dashboard_key_metrics_headers) + 1):
+        apply_data_style(ws_dashboard.cell(row=current_row, column=col_idx))
+    current_row += 1
+
+# --- Conditional formatting ---
+red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+
+# Chuyển PatternFill thành DifferentialStyle
+red_dxf = DifferentialStyle(fill=red_fill)
+green_dxf = DifferentialStyle(fill=green_fill)
+
+# Find the exact row numbers for "Đánh giá IOPS" and "Đánh giá Throughput"
+row_for_iop_assessment = -1
+row_for_throughput_assessment = -1
+
+for i, data_tuple in enumerate(dashboard_key_metrics_data):
+    if data_tuple[0] == "Đánh giá IOPS":
+        row_for_iop_assessment = i + 2 # +1 for 0-based to 1-based, +1 for header row
+    elif data_tuple[0] == "Đánh giá Throughput":
+        row_for_throughput_assessment = i + 2 # +1 for 0-based to 1-based, +1 for header row
+
+# Apply conditional formatting using the found row numbers
+if row_for_iop_assessment != -1:
+    # Rule cho "Không đạt yêu cầu" (Màu đỏ)
+    red_rule_iop = Rule( # <-- Sửa ở đây
+        type="expression",
+        formula=[f'D{row_for_iop_assessment}="Không đạt yêu cầu"'],
+        dxf=red_dxf,
+        stopIfTrue=True
+    )
+    ws_dashboard.conditional_formatting.add(f'D{row_for_iop_assessment}', red_rule_iop)
+
+    # Rule cho "Đạt yêu cầu" (Màu xanh lá)
+    green_rule_iop = Rule( # <-- Sửa ở đây
+        type="expression",
+        formula=[f'D{row_for_iop_assessment}="Đạt yêu cầu"'],
+        dxf=green_dxf,
+        stopIfTrue=True
+    )
+    ws_dashboard.conditional_formatting.add(f'D{row_for_iop_assessment}', green_rule_iop)
+
+if row_for_throughput_assessment != -1:
+    # Rule cho "Không đạt yêu cầu" (Màu đỏ)
+    red_rule_throughput = Rule( # <-- Sửa ở đây
+        type="expression",
+        formula=[f'D{row_for_throughput_assessment}="Không đạt yêu cầu"'],
+        dxf=red_dxf,
+        stopIfTrue=True
+    )
+    ws_dashboard.conditional_formatting.add(f'D{row_for_throughput_assessment}', red_rule_throughput)
+
+    # Rule cho "Đạt yêu cầu" (Màu xanh lá)
+    green_rule_throughput = Rule( # <-- Sửa ở đây
+        type="expression",
+        formula=[f'D{row_for_throughput_assessment}="Đạt yêu cầu"'],
+        dxf=green_dxf,
+        stopIfTrue=True
+    )
+    ws_dashboard.conditional_formatting.add(f'D{row_for_throughput_assessment}', green_rule_throughput)
+
+
+# Placeholder for Charts
+chart_placeholder_row = current_row + 2
+ws_dashboard.cell(row=chart_placeholder_row, column=1, value="B. Các Biểu Đồ").font = Font(bold=True)
+ws_dashboard.cell(row=chart_placeholder_row + 1, column=1, value="  - Biểu đồ Pie/Donut: Phân bổ dung lượng sử dụng (Dữ liệu: Usable Capacity, Metadata, Slack Space)").font = Font(italic=True)
+ws_dashboard.cell(row=chart_placeholder_row + 2, column=1, value="  - Biểu đồ Cột: So sánh IOPS & Throughput (Yêu cầu vs. Đạt được)").font = Font(italic=True)
+ws_dashboard.cell(row=chart_placeholder_row + 3, column=1, value="  - Biểu đồ Pie/Bar: Phân bổ CAPEX").font = Font(italic=True)
+ws_dashboard.cell(row=chart_placeholder_row + 4, column=1, value="  - Biểu đồ Pie/Bar: Phân bổ OPEX hàng năm").font = Font(italic=True)
+ws_dashboard.cell(row=chart_placeholder_row + 5, column=1, value="  - Biểu đồ Đường: TCO theo thời gian (ví dụ: 1, 3, 5 năm)").font = Font(italic=True)
+
+# Set column widths for Dashboard sheet
+set_column_widths(ws_dashboard, [60, 20, 10, 20])
+
+
+# Save the workbook
+wb.save(excel_file_name)
+
+print(f"File Excel '{excel_file_name}' đã được tạo thành công.")
