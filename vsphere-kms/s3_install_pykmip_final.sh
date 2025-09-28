@@ -108,22 +108,39 @@ if ! id "$USERNAME" &>/dev/null; then
     exit 1
 fi
 
-# Kiểm tra Python 3.10 đã cài chưa
-if ! command -v python3.10 &> /dev/null; then
-    log_warn "Python 3.10 chưa được cài. Sẽ cài đặt..."
-    NEED_PYTHON310=true
-else
-    log_info "Python 3.10 đã được cài đặt"
-    NEED_PYTHON310=false
-fi
+# ============================================================================
+# PHẦN 3: CÀI ĐẶT PYTHON 3.10 (CẦN SUDO)
+# ============================================================================
+log_info "=== Cài đặt Python 3.10 ==="
+
+check_sudo
+
+# Cập nhật hệ thống
+sudo apt update && sudo apt upgrade -y
+
+# Cài đặt các gói cần thiết để build Python
+sudo apt install -y wget build-essential libssl-dev zlib1g-dev \
+libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev \
+libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev libffi-dev \
+liblzma-dev tk-dev uuid-dev libgdbm-compat-dev
+
+# Thêm PPA deadsnakes
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt update
+
+# Cài đặt Python 3.10
+sudo apt install -y python3.10 python3.10-dev python3.10-venv python3.10-distutils python3.10-pip
+
+# Xác minh cài đặt
+log_info "Xác minh cài đặt Python 3.10:"
+python3.10 --version
 
 # ============================================================================
-# PHẦN 3: XÓA CÀI ĐẶT CŨ (NẾU CÓ)
+# PHẦN 4: XÓA CÀI ĐẶT CŨ (NẾU CÓ)
 # ============================================================================
 log_info "=== Xóa cài đặt cũ (nếu có) ==="
 
 # Dừng dịch vụ nếu đang chạy
-check_sudo
 sudo systemctl stop pykmip 2>/dev/null || true
 sudo systemctl disable pykmip 2>/dev/null || true
 
@@ -134,29 +151,6 @@ sudo rm -f /etc/systemd/system/pykmip.service
 if [ -d "$HOME_PATH/pykmip-server" ]; then
     log_info "Xóa thư mục cài đặt cũ..."
     rm -rf "$HOME_PATH/pykmip-server"
-fi
-
-# ============================================================================
-# PHẦN 4: CÀI ĐẶT GÓI HỆ THỐNG (CẦN SUDO)
-# ============================================================================
-log_info "=== Cài đặt gói hệ thống ==="
-
-# Cập nhật hệ thống
-sudo apt update && sudo apt upgrade -y
-
-# Cài đặt các gói cần thiết
-sudo apt install -y wget build-essential libssl-dev zlib1g-dev \
-libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev \
-libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev libffi-dev \
-liblzma-dev tk-dev uuid-dev libgdbm-compat-dev
-
-# Thêm PPA deadsnakes
-sudo add-apt-repository ppa:deadsnakes/ppa -y
-sudo apt update
-
-# Cài đặt Python 3.10 nếu cần
-if [ "$NEED_PYTHON310" = true ]; then
-    sudo apt install -y python3.10 python3.10-dev python3.10-venv python3.10-distutils python3.10-pip
 fi
 
 # ============================================================================
@@ -172,6 +166,12 @@ mkdir -p "$HOME_PATH/pykmip-server"/{config,logs,keys,ssl}
 log_info "Tạo môi trường ảo Python 3.10..."
 cd "$HOME_PATH"
 python3.10 -m venv pykmip-server/venv
+
+# Xác minh môi trường ảo đã được tạo
+if [ ! -f "$HOME_PATH/pykmip-server/venv/bin/python" ]; then
+    log_error "Môi trường ảo không được tạo đúng cách"
+    exit 1
+fi
 
 # Kích hoạt môi trường ảo và cài đặt PyKMIP
 log_info "Cài đặt PyKMIP và các phụ thuộc..."
