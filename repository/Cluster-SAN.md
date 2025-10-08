@@ -238,3 +238,145 @@ Dựa trên yêu cầu của bạn về hệ thống với các giải pháp SAP
    - Triển khai IBM Cloud Satellite cho hybrid cloud nếu cần mở rộng trong tương lai
 
 Hạ tầng này không chỉ đáp ứng hiện tại mà còn có khả năng mở rộng linh hoạt khi số lượng người dùng tăng lên.
+
+---
+
+# Phần 3. Kiểm tra các cấu hình và thông số Switching đáp ứng:
+
+## Switch Internal:
+
+>>>FAQ3. với cấu hình 2 SAN IBM trên mà có dùng switch internal sau đây của DELL thì có đáp ứng cho chạy 3 ESXi host VDC?
+
+
+
+### Phân Tích Khả Năng Tương Thích của DELL Switch S4112F với Hạ Tầng 2 SAN IBM + 3 ESXi Host
+
+#### **1. Thông Số Kỹ Thuật DELL Switch S4112F**
+- **Cổng kết nối**:
+  - 12 × 10GbE SFP+ 
+  - 3 × 100GbE QSFP28
+- **Tính năng**:
+  - Hỗ trợ **VLAN**, **Link Aggregation (LACP)**
+  - **Quality of Service (QoS)**
+  - **Jumbo Frame** (lên đến 9216 bytes)
+  - **Stacking** (qua 100GbE ports)
+- **Hiệu suất**:
+  - Throughput tối đa: **1.2 Tbps**
+  - Latency: **< 4µs**
+  - Forwarding rate: **895 Mpps**
+
+#### **2. Yêu Cầu Kết Nối cho Hạ Tầng**
+| Thiết Bị | Số Lượng | Cổng Cần Thiết | Ghi Chú |
+|----------|----------|----------------|---------|
+| IBM SAN (FlashSystem F4050) | 2 | 4 ports/san | 2 ports cho storage + 2 ports cho replication |
+| ESXi Host | 3 | 4 ports/host | 2 ports cho VM traffic + 2 ports cho storage |
+| **Tổng cổng cần thiết** | - | **20 ports** | - |
+
+#### **3. Phân Tích Khả Năng Đáp Ứng**
+
+##### **a. Đủ Số Lượng Cổng?**
+- **Cổng 10GbE**: 12 ports (có sẵn)
+- **Cổng 100GbE**: 3 ports (có thể dùng để mở rộng)
+- **Tính toán**:
+  ```markdown
+  - SAN IBM: 2 SAN × 4 ports = 8 ports
+  - ESXi Hosts: 3 hosts × 4 ports = 12 ports
+  - Tổng cộng: 20 ports > 12 ports sẵn có
+  ```
+→ **KHÔNG ĐỦ** nếu chỉ dùng 10GbE ports.
+
+##### **b. Giải Pháp Tối Ưu Hóa**
+1. **Sử dụng 100GbE Ports cho ESXi Hosts**:
+   - Mua thêm **3× DAC Cable 100GbE** (khoảng $200/cable)
+   - Cấu hình:
+     - Mỗi ESXi host dùng 1× 100GbE port (thay thế 4×10GbE)
+     - Tổng cổng dùng: 
+       ```markdown
+       - SAN: 8×10GbE 
+       - ESXi: 3×100GbE
+       - Tổng: 11 ports (thỏa mãn)
+       ```
+
+2. **Cấu Hình Link Aggregation (LACP)**:
+   - Gộp 2×10GbE thành 1 logical trunk 20GbE cho mỗi SAN
+   - Giảm số cổng vật lý cần thiết:
+     ```markdown
+     - SAN: 2 SAN × 2 trunk (4 ports) = 4 ports
+     - ESXi: 3 hosts × 2 trunk (4 ports) = 6 ports
+     - Tổng: 10 ports < 12 ports sẵn có
+     ```
+
+#### **4. Bảng Phân Bổ Cổng Tối Ưu**
+| Thiết Bị | Số Port Vật Lý | Cấu Hình | Băng Thông |
+|----------|----------------|----------|------------|
+| IBM SAN #1 | 2×10GbE | LACP Trunk | 20 Gbps |
+| IBM SAN #2 | 2×10GbE | LACP Trunk | 20 Gbps |
+| ESXi Host #1 | 2×10GbE | LACP Trunk | 20 Gbps |
+| ESXi Host #2 | 2×10GbE | LACP Trunk | 20 Gbps |
+| ESXi Host #3 | 2×10GbE | LACP Trunk | 20 Gbps |
+| **Tổng** | **10 ports** | - | **100 Gbps** |
+
+#### **5. Kiểm Tra Hiệu Suất**
+| Yêu Cầu | Khả Năng S4112F | Đánh Giá |
+|---------|------------------|----------|
+| **Throughput** | 1.2 Tbps | ✅ Vượt trội (chỉ cần 100 Gbps) |
+| **Latency** | <4µs | ✅ Tốt cho storage (<10µs) |
+| **Jumbo Frame** | Hỗ trợ 9216 bytes | ✅ Tối ưu cho iSCSI/NFS |
+| **Redundancy** | LACP + Dual PSU | ✅ Đảm bảo HA |
+| **VLAN Segmentation** | Hỗ trợ 4K VLANs | ✅ Phân chia traffic |
+
+#### **6. Khả Năng Mở Rộng**
+- **Với 5000 UCC**:
+  - Thêm 1× S4112F thứ 2 (stack qua 100GbE)
+  - Tổng throughput: **2.4 Tbps**
+  - Hỗ trợ thêm:
+    - 6 ESXi hosts nữa
+    - 2 SAN nữa
+    - Uplink 100GbE đến core switch
+
+#### **7. Kết Luận**
+| Tiêu Chí | Đánh Giá | Ghi Chú |
+|----------|----------|---------|
+| **Khả năng kết nối** | ✅ ĐÁP ỨNG | Với cấu hình LACP tối ưu |
+| **Hiệu suất** | ✅ XUẤT SẮC | Vượt trội so với yêu cầu |
+| **Khả năng mở rộng** | ✅ TỐT | Hỗ trợ stacking qua 100GbE |
+| **Chi phí** | ✅ HỢP LÝ | Không cần thay switch khi mở rộng |
+
+#### **8. Khuyến Nghị Triển Khai**
+1. **Cấu hình LACP**:
+   ```bash
+   config t
+   interface range tengigabitethernet 1/0/1-2
+     channel-group 1 mode active
+   exit
+   interface port-channel 1
+     description SAN_1_Trunk
+     switchport mode trunk
+   ```
+
+2. **Bật Jumbo Frame**:
+   ```bash
+   system jumbo mtu 9216
+   ```
+
+3. **Cấu hình QoS cho Storage**:
+   ```bash
+   class-map match-any STORAGE
+     match ip dscp ef
+   policy-map STORAGE_POLICY
+     class STORAGE
+       bandwidth percent 40
+   interface port-channel 1
+     service-policy output STORAGE_POLICY
+   ```
+
+4. **Stacking (khi mở rộng)**:
+   ```bash
+   stack stack-unit 1 provision S4112F
+   stack stack-unit 2 provision S4112F
+   stack stack-unit 1 port 1 100G 1/1/1
+   stack stack-unit 2 port 1 100G 1/1/1
+   ```
+
+**Tóm tắt**: DELL S4112F **HOÀN TOÀN ĐÁP ỨNG** yêu cầu kết nối 2 SAN IBM + 3 ESXi host khi sử dụng LACP để tối ưu hóa số cổng. Switch có dư bandwidth và khả năng mở rộng linh hoạt cho quy mô 5000 users.
+
