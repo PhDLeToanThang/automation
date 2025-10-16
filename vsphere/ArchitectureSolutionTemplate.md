@@ -162,3 +162,5 @@ Mô hình này triển khai SQL Server Cluster (có thể là FCI hoặc kết h
 |----|----------|----------|----------|---------|
 | 1 | | | | |
 | 2 | | | | |
+
+Tham khảo html5: https://chat.z.ai/space/h0kst8st89k1-art
