@@ -65,6 +65,9 @@ Hệ thống SAN (Storage Area Network) là giải pháp lưu trữ tập trung,
 
 Công nghệ Snapshot cho phép ghi lại trạng thái dữ liệu tại một thời điểm mà không cần sao chép toàn bộ dữ liệu, giúp backup và phục hồi nhanh chóng.
 
+![Sơ đồ tổng quát hệ lưu trữ](https://github-production-user-asset-6210df.s3.amazonaws.com/106635733/501799101-75dbb3e5-10e5-47e9-9453-d89f6920aeb5.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251016T030235Z&X-Amz-Expires=300&X-Amz-Signature=363e40f475edf4afd7e32e410a84464957b8d8e766e7f9f803864905786a0bb5&X-Amz-SignedHeaders=host)
+
+
 **Thành phần chính**
 - **SAN Storage**: Bao gồm 02 SAN kép (SAN 1 và SAN 2) kết nối qua SAN Switch 01 và SAN Switch 02 để đảm bảo dự phòng. Là thiết bị lưu trữ chính, nơi chứa các volume dữ liệu và hỗ trợ tính năng snapshot.
 - **SAN Switch**: Hệ thống mạng LAN gồm Switch 01, Switch 02 và Stack Core Switch để phục vụ truy cập client và heartbeat.
@@ -121,8 +124,7 @@ Nhiều tính năng chính của vSphere, bao gồm VMware Distributed Resource 
 
 **Kiến trúc máy chủ VMware vCenter**
 
-![Kiến trúc máy chủ VMware vCenter](images/vmware-vcenter-architecture.png)
-
+![Kiến trúc máy chủ VMware vCenter](https://github-production-user-asset-6210df.s3.amazonaws.com/106635733/501799866-aa701821-5000-43cb-a292-37c4d18e445d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251016T030435Z&X-Amz-Expires=300&X-Amz-Signature=3bb074031853b36c2fe38407a3e531ece799550be4a3dcbd637df7b80cae9e83&X-Amz-SignedHeaders=host)
 
 #### 2.6 Mô hình triển khai SQL Server Cluster
 
