@@ -43,7 +43,7 @@ Tính linh hoạt trong hệ thống còn được bổ sung với một tính n
 
 **Mô hình hệ thống ảo hóa**
 
-![Mô hình hệ thống ảo hóa](./AST3.pnd)
+![Mô hình hệ thống ảo hóa](https://github.com/PhDLeToanThang/automation/edit/main/vsphere/AST3.png)
 
 ### 2. Miêu tả các thành phần trong hệ thống
 
