@@ -311,7 +311,7 @@ Theo sheet **Deploy Parameters**:
 
 ### Physical Network Layer (Spine-Leaf)
 
-`
+```
 =================================================================================
                VCF 5.2 — PRODUCTION TOPOLOGY | lms.qnet.vn | qnet.edu.vn
 =================================================================================
@@ -354,11 +354,11 @@ Theo sheet **Deploy Parameters**:
 | [SDDC-DPortGroup-VM-Mgmt/666, Mgmt/667,   |
 |  vMotion/668, VSAN/669, NSX TEP/670]      |
 +----------------------------------------------+
-`
+```
 
 ### Management Domain — sfo-m01 / qnet.edu.vn
 
-`
+```
 .---------------------------------------------------------------------------.
 |                    MANAGEMENT DOMAIN — sfo-m01 / qnet.edu.vn              |
 |                                                                           |
@@ -387,11 +387,11 @@ Theo sheet **Deploy Parameters**:
 |                                                                           |
 |  DNS: 172.16.11.4  |  NTP: vn.pool.ntp.org / 172.16.11.4                |
 '---------------------------------------------------------------------------'
-`
+```
 
 ### Workload Domain 01 — ERP + FCI (vcf-w01)
 
-`
+```
 .---------------------------------------------------------------------------.
 |           WORKLOAD DOMAIN 01 — ERP + FCI (200 CCU x 2)                   |
 |           vCenter: vcf-w01-vc01 (.71) | NSX VIP: vcf-w01-nsx01 (.78)    |
@@ -408,11 +408,11 @@ Theo sheet **Deploy Parameters**:
 |  NSX Edge: Active/Standby  |  T0 BGP -> Physical ASR1001               |
 |  Overlay: erp-app(192.168.100.0/24)  erp-db(192.168.101.0/24)         |
 '---------------------------------------------------------------------------'
-`
+```
 
 ### Workload Domain 02 — BigData (vcf-w02)
 
-`
+```
 .---------------------------------------------------------------------------.
 |       WORKLOAD DOMAIN 02 — BigData (Hadoop2 + Spark + SPSS)              |
 |       vCenter: vcf-w02-vc01 (.81) | NSX VIP: vcf-w02-nsx01 (.88)        |
@@ -430,11 +430,11 @@ Theo sheet **Deploy Parameters**:
 |  NN=NameNode, SNN=Standby, RM=ResMgr, DN=DataNode, SW=SparkWorker      |
 |  Overlay: HDFS(.200/24) Spark(.201/24) SPSS(.202/24) Mgmt(.210/24)    |
 '---------------------------------------------------------------------------'
-`
+```
 
 ### Workload Domain 03 — Power BI (vcf-w03)
 
-`
+```
 .---------------------------------------------------------------------------.
 |           WORKLOAD DOMAIN 03 — Power BI Report Server (2000 CCU)         |
 |           vCenter: vcf-w03-vc01 (.91) | NSX VIP: vcf-w03-nsx01 (.98)    |
@@ -449,11 +449,11 @@ Theo sheet **Deploy Parameters**:
 |  '-------------------------------------------------------------------'  |
 |  Overlay: Web(.300/24) DB(.301/24) GW(.302/24)                          |
 '---------------------------------------------------------------------------'
-`
+```
 
 ### NSX 4.1.2 Overlay & Edge Cluster
 
-`
+```
 .---------------------------------------------------------------------------.
 |                         NSX 4.1.2 OVERLAY NETWORK                         |
 |---------------------------------------------------------------------------|
@@ -482,13 +482,13 @@ Theo sheet **Deploy Parameters**:
 |  Transport Zones: Overlay=qnet.edu.vn-tz-overlay01                       |
 |                   VLAN=qnet.edu.vn-tz-vlan01  |  Transport VLAN=670      |
 '---------------------------------------------------------------------------'
-`
+```
 
 ## 8. Microsegment Layers for Services
 
 ### 8.1 Micro-segmentation Architecture (NSX Distributed Firewall)
 
-`
+```
 .---------------------------------------------------------------------------.
 |                  MICRO-SEGMENTATION LAYERS (Zero Trust Model)              |
 |---------------------------------------------------------------------------|
@@ -538,7 +538,7 @@ Theo sheet **Deploy Parameters**:
 |  | All other cross-domain: Drop (zero-trust)                            |  |
 |  '--------------------------------------------------------------------'  |
 '---------------------------------------------------------------------------'
-`
+```
 
 ### 8.2 Services Micro-segmentation Table
 
