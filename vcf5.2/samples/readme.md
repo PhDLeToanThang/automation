@@ -4,7 +4,7 @@
 ---
 Dưới đây là nội dung chi tiết được trình bày dưới định dạng `README.md`. Bạn có thể copy toàn bộ nội dung trong khung code bên dưới và lưu thành file `README.md` để sử dụng cho hồ sơ đề xuất kỹ thuật hoặc tài liệu thiết kế kiến trúc (HLD/LLD).
 
-```markdown
+
 # VCF 5.2 Sizing & Configuration Proposal
 **Tài liệu tham khảo & Tự động hóa triển khai:** [automation/vcf5.2](https://github.com/PhDLeToanThang/automation/tree/main/vcf5.2)
 
@@ -107,7 +107,8 @@ Dựa trên best practice của VCF 5.2 và yêu cầu cô lập tài nguyên (R
 2.  **Hadoop 2:** Hadoop 2 đã cũ (End of Life). Hạ tầng VCF 5.2 hoàn toàn đáp ứng tốt, nhưng khuyến nghị chủ đầu tư lộ trình nâng cấp lên **Hadoop 3.x** để tận dụng Erasure Coding, giúp tiết kiệm 30-40% dung lượng lưu trữ trên vSAN.
 3.  **Network:** Yêu cầu Switch vật lý (ToR) phải hỗ trợ MTU 9000 (Jumbo Frames) cho vSAN và NSX Geneve traffic.
 4.  **Licensing:** Cấu hình trên chưa bao gồm chi tiết license (VCF Universal / Per Core). Cần dựa trên số lượng Core thực tế (Total Cores = 18 hosts * 48 cores = 864 Cores) để làm việc với VMware/Partner về báo giá license VCF 5.2 (Subscription hoặc Perpetual).
-```
+
+---
 
 ### Giải thích thêm về cách tính toán (Dành cho bạn khi bảo vệ trước chủ đầu tư):
 1. **Tại sao Management Domain dùng 4 nodes?** Trong VCF 5.x, việc chạy NSX-T Edge VMs chung với Management VMs trên cluster 3 nodes sẽ gây rủi ro thiếu tài nguyên khi 1 node bị lỗi (Admission Control). 4 nodes là chuẩn thiết kế (Validated Design) của VMware cho Management Domain.
