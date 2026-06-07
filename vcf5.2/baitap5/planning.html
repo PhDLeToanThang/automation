@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VCF 5.2 Planning & Preparation Workbook</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="planning.css">
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <img src="favicon.ico" alt="VCF" onerror="this.style.display='none'">
+    <h1>VCF 5.2 Planning &amp; Preparation</h1>
+  </div>
+  <div class="header-right">
+    <button class="btn" onclick="saveSession()" title="Save current session">💾 <span>Save</span></button>
+    <button class="btn" onclick="exportJSON()" title="Export as JSON">📤 <span>Export</span></button>
+    <button class="btn" onclick="importJSON()" title="Import from JSON">📥 <span>Import</span></button>
+    <button class="btn btn-primary" onclick="printPDF()" title="Print / PDF">🖨️ <span>PDF</span></button>
+    <button class="btn" onclick="showHistory()" title="View history">📋 <span>History</span></button>
+  </div>
+</div>
+
+<div class="nav-tabs" id="navTabs">
+  <button class="tab-btn" onclick="switchTab('deployment-options')" data-tab="deployment-options"><span class="tab-icon">⚙</span> Deployment Options</button>
+  <button class="tab-btn" onclick="switchTab('prerequisite-checklist')" data-tab="prerequisite-checklist"><span class="tab-icon">✓</span> Prerequisite Checklist</button>
+  <button class="tab-btn" onclick="switchTab('mgmt-sizing-inputs')" data-tab="mgmt-sizing-inputs"><span class="tab-icon">📊</span> Mgmt Sizing Inputs</button>
+  <button class="tab-btn" onclick="switchTab('network-inputs-rack')" data-tab="network-inputs-rack"><span class="tab-icon">🌐</span> Network - Rack</button>
+  <button class="tab-btn" onclick="switchTab('network-inputs-vvs')" data-tab="network-inputs-vvs"><span class="tab-icon">🔌</span> Network - VVS</button>
+  <button class="tab-btn" onclick="switchTab('name-ip-vm')" data-tab="name-ip-vm"><span class="tab-icon">🖥</span> Name & IP - VM</button>
+  <button class="tab-btn" onclick="switchTab('name-ip-rack')" data-tab="name-ip-rack"><span class="tab-icon">🏗</span> Name & IP - Rack</button>
+  <button class="tab-btn" onclick="switchTab('sddc-inputs-common')" data-tab="sddc-inputs-common"><span class="tab-icon">🔐</span> SDDC - Common</button>
+  <button class="tab-btn" onclick="switchTab('active-directory')" data-tab="active-directory"><span class="tab-icon">👤</span> Active Directory</button>
+  <button class="tab-btn" onclick="switchTab('sddc-inputs-rack')" data-tab="sddc-inputs-rack"><span class="tab-icon">📦</span> SDDC - Rack</button>
+  <button class="tab-btn" onclick="switchTab('mgmt-domain-deploy')" data-tab="mgmt-domain-deploy"><span class="tab-icon">🚀</span> Mgmt Domain Deploy</button>
+  <button class="tab-btn" onclick="switchTab('vi-workload-domain')" data-tab="vi-workload-domain"><span class="tab-icon">🔄</span> VI Workload Domain</button>
+</div>
+
+<div class="container">
+<div class="action-bar">
+  <button class="btn btn-success" onclick="saveAll()">💾 Save All Data</button>
+  <button class="btn" onclick="exportJSON()">📤 Export JSON</button>
+  <button class="btn" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+  <button class="btn btn-primary" onclick="printPDF()">🖨️ Print / PDF</button>
+  <button class="btn" onclick="clearAll()">🗑️ Clear All</button>
+  <span style="margin-left:auto;font-size:0.82rem;color:var(--text-secondary)" id="statusBar">Ready</span>
+</div>
+
+<div class="tab-content" id="tab-deployment-options">
+<div class="tab-description">Select your options for a VMware Cloud Foundation Deployment</div>
+<div class="section-card">
+<div class="section-header">📄 Deployment Options</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="vcf_version">VMware Cloud Foundation Version</label><select id="vcf_version" name="vcf_version"><option value="v5.2.x">v5.2.x</option><option value="v5.1.x">v5.1.x</option><option value="v5.0.x">v5.0.x</option></select></div>
+<div class="form-group"><label for="sso_domain">Multi-Instance Integration Model</label><select id="sso_domain" name="sso_domain"><option value="First Domain">First Domain</option><option value="Additional Domain">Additional Domain</option></select></div>
+<div class="form-group"><label for="vsan_arch">vSAN Architecture Model</label><select id="vsan_arch" name="vsan_arch"><option value="vSAN-ESA">vSAN-ESA</option><option value="vSAN-OSA">vSAN-OSA</option></select></div>
+<div class="form-group"><label for="vlcm_model">vSphere Lifecycle Manager Model</label><select id="vlcm_model" name="vlcm_model"><option value="Images">Images</option><option value="Baselines">Baselines</option></select></div>
+<div class="form-group"><label for="separate_vlan">Separate VLAN for Mgmt VMs/ESXi Mgmt</label><select id="separate_vlan" name="separate_vlan"><option value="Include">Include</option><option value="Exclude">Exclude</option></select></div>
+<div class="form-group"><label for="overlay_ip_model">Host Overlay Network IP Addressing</label><select id="overlay_ip_model" name="overlay_ip_model"><option value="Static">Static</option><option value="DHCP">DHCP</option></select></div>
+<div class="form-group"><label for="consolidated_mgmt">Consolidated Management Domain</label><select id="consolidated_mgmt" name="consolidated_mgmt"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="external_certs_mgmt">Deploy with External Certificates</label><select id="external_certs_mgmt" name="external_certs_mgmt"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="signed_certs">Apply Signed Certificates</label><select id="signed_certs" name="signed_certs"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="nsx_routing_mgmt">NSX Routing for Management Domain</label><select id="nsx_routing_mgmt" name="nsx_routing_mgmt"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="nsx_federation_mgmt">NSX Federation for Management Domain</label><select id="nsx_federation_mgmt" name="nsx_federation_mgmt"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="stretched_cluster">Stretched Cluster</label><select id="stretched_cluster" name="stretched_cluster"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="avi_lb">Deploy AVI Load Balancer</label><select id="avi_lb" name="avi_lb"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="internet_proxy">Internet Proxy</label><select id="internet_proxy" name="internet_proxy"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="offline_depot">Offline Depot</label><select id="offline_depot" name="offline_depot"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="aria_suite_lifecycle">VMware Aria Suite Lifecycle</label><select id="aria_suite_lifecycle" name="aria_suite_lifecycle"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vcf_aware_wsa">VCF Aware Workspace ONE Access</label><select id="vcf_aware_wsa" name="vcf_aware_wsa"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="deploy_vi_wld">Deploy VI Workload Domain</label><select id="deploy_vi_wld" name="deploy_vi_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="overlay_ip_model_wld">Host Overlay IP (Workload)</label><select id="overlay_ip_model_wld" name="overlay_ip_model_wld"><option value="Static">Static</option><option value="DHCP">DHCP</option></select></div>
+<div class="form-group"><label for="principal_storage_wld">Principal Storage (Workload)</label><select id="principal_storage_wld" name="principal_storage_wld"><option value="vSAN-ESA">vSAN-ESA</option><option value="vSAN-OSA">vSAN-OSA</option><option value="VMFS">VMFS</option><option value="vVOLS">vVOLS</option><option value="NFS">NFS</option></select></div>
+<div class="form-group"><label for="vlcm_model_wld">vLCM Model (Workload)</label><select id="vlcm_model_wld" name="vlcm_model_wld"><option value="Images">Images</option><option value="Baselines">Baselines</option></select></div>
+<div class="form-group"><label for="separate_vlan_wld">Separate VLAN (Workload)</label><select id="separate_vlan_wld" name="separate_vlan_wld"><option value="Include">Include</option><option value="Exclude">Exclude</option></select></div>
+<div class="form-group"><label for="external_certs_wld">External Certificates (Workload)</label><select id="external_certs_wld" name="external_certs_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="secondary_nfs">Prepare for Secondary NFS</label><select id="secondary_nfs" name="secondary_nfs"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="multi_rack">Deploy Layer 3 Multi Rack</label><select id="multi_rack" name="multi_rack"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="dedicated_edge_racks">Dedicated Racks for NSX Edges</label><select id="dedicated_edge_racks" name="dedicated_edge_racks"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="signed_certs_wld">Apply Signed Certificates (Workload)</label><select id="signed_certs_wld" name="signed_certs_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="nsx_routing_wld">NSX Routing for Workload Domain</label><select id="nsx_routing_wld" name="nsx_routing_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="nsx_federation_wld">NSX Federation for Workload Domain</label><select id="nsx_federation_wld" name="nsx_federation_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="stretched_cluster_wld">Stretched Cluster (Workload)</label><select id="stretched_cluster_wld" name="stretched_cluster_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="avi_lb_wld">Deploy AVI (Workload)</label><select id="avi_lb_wld" name="avi_lb_wld"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Validated Solutions Deployment</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="vs_idm">Identity & Access Management</label><select id="vs_idm" name="vs_idm"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_dev_ready">Developer Ready Infrastructure</label><select id="vs_dev_ready" name="vs_dev_ready"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_ai_ready">Private AI Ready Infrastructure</label><select id="vs_ai_ready" name="vs_ai_ready"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_logging">Intelligent Logging & Analytics</label><select id="vs_logging" name="vs_logging"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_ops_mgmt">Intelligent Operations Management</label><select id="vs_ops_mgmt" name="vs_ops_mgmt"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_net_vis">Intelligent Network Visibility</label><select id="vs_net_vis" name="vs_net_vis"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_cloud_auto">Private Cloud Automation</label><select id="vs_cloud_auto" name="vs_cloud_auto"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_site_protection">Site Protection & DR</label><select id="vs_site_protection" name="vs_site_protection"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_health_mon">Health Reporting and Monitoring</label><select id="vs_health_mon" name="vs_health_mon"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_ransomware">Cloud-Based Ransomware Recovery</label><select id="vs_ransomware" name="vs_ransomware"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="vs_cross_cloud">Cross Cloud Mobility</label><select id="vs_cross_cloud" name="vs_cross_cloud"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-prerequisite-checklist">
+<div class="tab-description">Pre-requisites to be completed before proceeding with deployments</div>
+<div class="section-card">
+<div class="section-header">📄 Hardware (Management Domain)</div>
+<div class="section-body">
+<table class="readonly-table">
+<thead><tr><th>Server Component</th><th>Minimum Requirements</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Server Type</td><td>4x vSAN ReadyNode - Hybrid (HY) or 4x servers vSAN-compliant</td><td>All Flash recommended. Homogenous servers required per cluster.</td></tr>
+<tr><td>CPU</td><td>Supported Configurations</td><td>Refer to VMware Compatibility Guide</td></tr>
+<tr><td>Memory</td><td>Supported Configurations</td><td>256GB per host based on 4 hosts</td></tr>
+<tr><td>Storage (Boot)</td><td>32 GB SATA-DOM or larger</td><td>SD-Cards considered legacy</td></tr>
+<tr><td>Storage vSAN-OSA (Cache)</td><td>Supported Configurations</td><td>1.2TB Raw Capacity for Caching Tier (All-Flash)</td></tr>
+<tr><td>Storage vSAN-OSA (Capacity)</td><td>Supported Configurations</td><td>12.5TB Raw Capacity for Capacity Tier</td></tr>
+<tr><td>Storage vSAN-ESA</td><td>Supported Configurations</td><td>12.5TB Raw, 4x3.2TB NVME SSD per node</td></tr>
+<tr><td>NICs per server</td><td>Two 10 GbE NICs + One 1 GbE BMC NIC</td><td>Max 6 pNICs per host (greater than 4 requires Public API)</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Hardware (Workload Domain)</div>
+<div class="section-body">
+<table class="readonly-table">
+<thead><tr><th>Server Component</th><th>Minimum Requirements</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Type</td><td>3 Supported Servers (min 4 nodes for production)</td><td>Refer to VMware Compatibility Guide</td></tr>
+<tr><td>CPU</td><td>Supported configurations</td><td></td></tr>
+<tr><td>Memory</td><td>Supported configurations</td><td></td></tr>
+<tr><td>Storage (Boot)</td><td>Supported configurations</td><td></td></tr>
+<tr><td>Storage vSAN-OSA (Cache)</td><td>Supported configurations</td><td></td></tr>
+<tr><td>Storage vSAN-OSA (Capacity)</td><td>Supported configurations</td><td></td></tr>
+<tr><td>Storage vSAN-ESA</td><td>Supported configurations</td><td></td></tr>
+<tr><td>NICs per server</td><td>Two 10 GbE NICs + One 1 GbE BMC NIC</td><td>Max 64 pNICs per host</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Network Requirements</div>
+<div class="section-body">
+<table class="readonly-table">
+<thead><tr><th>Configuration</th><th>Feature</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Physical Network</td><td>Jumbo frames</td><td>Required for vSAN, vMotion, Host Overlay, NFS, NSX-T Edge Overlay</td></tr>
+<tr><td></td><td>BGP adjacency and AS numbers</td><td>Required for Dynamic routing in SDDC</td></tr>
+<tr><td></td><td>Teaming Configurations</td><td>LAG/LACP/VPC not supported</td></tr>
+<tr><td></td><td>Multi-path routing (ECMP)</td><td>Verify ECMP support on ToR switches</td></tr>
+<tr><td>Stretched Network</td><td>Multi-AZ Environment</td><td>Verify routing between AZ1 and AZ2 subnets</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 VMware Software, Scripts, and Tools</div>
+<div class="section-body">
+<table class="readonly-table">
+<thead><tr><th>Software</th><th>Download Location</th><th>Filename</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Cloud Builder Appliance</td><td>support.broadcom.com</td><td>VMware-Cloud-Builder-*.ova</td><td>Deploy and configure per VCF instance</td></tr>
+<tr><td>Deployment Parameters Workbook</td><td>support.broadcom.com</td><td>vcf-ems-deployment-parameter.xlsx</td><td>Input file for Cloud Builder automated deployment</td></tr>
+<tr><td>Certificate Generation Utility</td><td>VMware KB 85527</td><td>CertGenVVS</td><td>Generate CSR and signed certificates</td></tr>
+<tr><td>vSAN Witness Appliance</td><td>my.vmware.com</td><td>VMware-VirtualSAN-Witness-*.ova</td><td>Witness appliance for secondary AZ</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Active Directory Requirements</div>
+<div class="section-body">
+<table class="readonly-table">
+<thead><tr><th>AD Element</th><th>Domain Instance</th><th>Rainpole Value</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>AD Forest Configuration</td><td>Parent</td><td>rainpole.io</td><td>Contains DNS, time server, universal groups</td></tr>
+<tr><td></td><td>Child</td><td>sfo.rainpole.io</td><td>Contains SDDC users and groups</td></tr>
+<tr><td>AD Users and Groups</td><td></td><td></td><td>Must exist before installation/configuration</td></tr>
+<tr><td>AD Connectivity</td><td></td><td></td><td>All DCs accessible by management components</td></tr>
+<tr><td>AD Version</td><td></td><td></td><td>Windows Server 2019/2022 supported</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 DHCP / DNS / NTP / SMTP / CA / SFTP</div>
+<div class="section-body">
+<table class="readonly-table">
+<thead><tr><th>Service</th><th>Required Configuration</th></tr></thead>
+<tbody>
+<tr><td>DHCP Server</td><td>Required for ESXi Host Overlay VMkernel ports. 1 IP per NIC per host.</td></tr>
+<tr><td>DNS Host Entries</td><td>Parent: rainpole.io, Child: sfo.rainpole.io. Dynamic updates = Nonsecure and secure</td></tr>
+<tr><td>NTP Sources</td><td>2 time sources per instance, external to SDDC. Accessible from all nodes.</td></tr>
+<tr><td>NTP Configuration</td><td>Configure on ESXi hosts, AD DCs, and virtual appliances</td></tr>
+<tr><td>SMTP Mail Relay</td><td>Must be reachable from each SDDC component</td></tr>
+<tr><td>Certificate Authority</td><td>Must support CSR ingestion and issue signed certificates</td></tr>
+<tr><td>SFTP Server</td><td>Required for NSX-T and SDDC Manager backups</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-mgmt-sizing-inputs">
+<div class="tab-description">Environment parameters for management domain configuration</div>
+<div class="section-card">
+<div class="section-header">📄 Management Domain Assumptions</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="vm_overhead_pct">Virtual Machine Overhead (%)</label><input type="number" id="vm_overhead_pct" name="vm_overhead_pct" value="30" min="0" max="100"></div>
+<div class="form-group"><label for="estimated_growth_pct">Estimated Growth (%)</label><input type="number" id="estimated_growth_pct" name="estimated_growth_pct" value="20" min="0" max="100"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Management Domain Host Parameters</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="cpu_cores">CPU Cores per Host</label><input type="number" id="cpu_cores" name="cpu_cores" value="64" min="1"></div>
+<div class="form-group"><label for="ram_gb">RAM per Host (GB)</label><input type="number" id="ram_gb" name="ram_gb" value="1024" min="1"></div>
+<div class="form-group"><label for="cpu_oversub">CPU Oversubscription (X:1)</label><input type="number" id="cpu_oversub" name="cpu_oversub" value="2" min="1" max="20"></div>
+<div class="form-group"><label for="mem_oversub">Memory Oversubscription (X:1)</label><input type="number" id="mem_oversub" name="mem_oversub" value="1" min="1" max="20"></div>
+<div class="form-group"><label for="vsan_disk_groups">vSAN Disk Groups per Host</label><input type="number" id="vsan_disk_groups" name="vsan_disk_groups" value="2" min="1" max="8"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Management Domain Components</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="m01_select">Enable m01</label><select id="m01_select" name="m01_select"><option value="Include">Include</option><option value="Exclude">Exclude</option></select></div>
+<div class="form-group"><label for="m01_vcenter_size">vCenter Appliance Size</label><select id="m01_vcenter_size" name="m01_vcenter_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option><option value="Extra_Large">Extra_Large</option></select></div>
+<div class="form-group"><label for="m01_vcenter_storage">vCenter Storage Size</label><select id="m01_vcenter_storage" name="m01_vcenter_storage"><option value="Default">Default</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="m01_nsxt_model">NSX-T Model</label><select id="m01_nsxt_model" name="m01_nsxt_model"><option value="Dedicated">Dedicated</option><option value="Shared">Shared</option></select></div>
+<div class="form-group"><label for="m01_nsxt_size">NSX-T Local Manager Size</label><select id="m01_nsxt_size" name="m01_nsxt_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="m01_nsxt_edge_size">NSX-T Edge Size</label><select id="m01_nsxt_edge_size" name="m01_nsxt_edge_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option><option value="Extra_Large">Extra_Large</option></select></div>
+<div class="form-group"><label for="m01_nsx_gm_size">NSX GM Appliance Size</label><select id="m01_nsx_gm_size" name="m01_nsx_gm_size"><option value="Medium">Medium</option><option value="Large">Large</option><option value="Extra_Large">Extra_Large</option></select></div>
+<div class="form-group"><label for="m01_avi_lb">AVI Load Balancer</label><select id="m01_avi_lb" name="m01_avi_lb"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+<div class="form-group"><label for="m01_avi_size">AVI LB Appliance Size</label><select id="m01_avi_size" name="m01_avi_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="m01_ssp">Security Service Platform</label><select id="m01_ssp" name="m01_ssp"><option value="Exclude">Exclude</option><option value="Include">Include</option></select></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Validated Solutions Sizing</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="vvs_wsa_size">WSA Appliance Size</label><select id="vvs_wsa_size" name="vvs_wsa_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="vvs_logs_size">Aria Operations Logs Size</label><select id="vvs_logs_size" name="vvs_logs_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="vvs_ops_node_size">Aria Operations Node Size</label><select id="vvs_ops_node_size" name="vvs_ops_node_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option><option value="Extra_Large">Extra_Large</option></select></div>
+<div class="form-group"><label for="vvs_ops_proxy_size">Aria Operations Cloud Proxy Size</label><select id="vvs_ops_proxy_size" name="vvs_ops_proxy_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="vvs_netvis_platform">Network Visibility Platform Node</label><select id="vvs_netvis_platform" name="vvs_netvis_platform"><option value="Large">Large</option><option value="Extra_Large">Extra_Large</option></select></div>
+<div class="form-group"><label for="vvs_netvis_collector">Network Visibility Collector</label><select id="vvs_netvis_collector" name="vvs_netvis_collector"><option value="Large">Large</option><option value="Extra_Large">Extra_Large</option></select></div>
+<div class="form-group"><label for="vvs_aria_auto_size">Aria Automation Size</label><select id="vvs_aria_auto_size" name="vvs_aria_auto_size"><option value="Small">Small</option><option value="Medium">Medium</option><option value="Large">Large</option></select></div>
+<div class="form-group"><label for="vvs_srm_mgmt">SRM (Mgmt Domain)</label><select id="vvs_srm_mgmt" name="vvs_srm_mgmt"><option value="Standard">Standard</option><option value="Advanced">Advanced</option></select></div>
+<div class="form-group"><label for="vvs_srm_wld">SRM (Workload Domain)</label><select id="vvs_srm_wld" name="vvs_srm_wld"><option value="Standard">Standard</option><option value="Advanced">Advanced</option></select></div>
+<div class="form-group"><label for="vvs_cyber_recovery">Cyber Recovery Connector</label><select id="vvs_cyber_recovery" name="vvs_cyber_recovery"><option value="Standard">Standard</option></select></div>
+<div class="form-group"><label for="vvs_hcx_size">HCX Connector Size</label><select id="vvs_hcx_size" name="vvs_hcx_size"><option value="Standard">Standard</option></select></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-network-inputs-rack">
+<div class="tab-description">VLAN and IP Subnet Requirements for racks</div>
+<div class="section-card">
+<div class="section-header">📄 Mgmt Domain VLAN/IP Subnets (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Function</th><th>Ref VLAN</th><th>Your VLAN</th><th>Ref Subnet</th><th>Your Subnet</th><th>Ref Gateway</th><th>Your Gateway</th><th>Ref MTU</th><th>Your MTU</th></tr></thead>
+<tbody>
+<tr><td>Management VM Network</td><td class="ref-value">1110</td><td><input type="text" id="mgmt_vlan_id_vlan" name="mgmt_vlan_id_vlan" value=""></td><td class="ref-value">10.11.10.0/24</td><td><input type="text" id="mgmt_vlan_id_subnet" name="mgmt_vlan_id_subnet" value=""></td><td class="ref-value">10.11.10.1</td><td><input type="text" id="mgmt_vlan_id_gw" name="mgmt_vlan_id_gw" value=""></td><td class="ref-value">1500</td><td><input type="text" id="mgmt_vlan_id_mtu" name="mgmt_vlan_id_mtu" value=""></td></tr>
+<tr><td>ESXi Management Network</td><td class="ref-value">1111</td><td><input type="text" id="esxi_mgmt_vlan_vlan" name="esxi_mgmt_vlan_vlan" value=""></td><td class="ref-value">10.11.11.0/24</td><td><input type="text" id="esxi_mgmt_vlan_subnet" name="esxi_mgmt_vlan_subnet" value=""></td><td class="ref-value">10.11.11.1</td><td><input type="text" id="esxi_mgmt_vlan_gw" name="esxi_mgmt_vlan_gw" value=""></td><td class="ref-value">1500</td><td><input type="text" id="esxi_mgmt_vlan_mtu" name="esxi_mgmt_vlan_mtu" value=""></td></tr>
+<tr><td>vMotion Network</td><td class="ref-value">1112</td><td><input type="text" id="vmotion_vlan_vlan" name="vmotion_vlan_vlan" value=""></td><td class="ref-value">10.11.12.0/24</td><td><input type="text" id="vmotion_vlan_subnet" name="vmotion_vlan_subnet" value=""></td><td class="ref-value">10.11.12.1</td><td><input type="text" id="vmotion_vlan_gw" name="vmotion_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="vmotion_vlan_mtu" name="vmotion_vlan_mtu" value=""></td></tr>
+<tr><td>vSAN Network</td><td class="ref-value">1113</td><td><input type="text" id="vsan_vlan_vlan" name="vsan_vlan_vlan" value=""></td><td class="ref-value">10.11.13.0/24</td><td><input type="text" id="vsan_vlan_subnet" name="vsan_vlan_subnet" value=""></td><td class="ref-value">10.11.13.1</td><td><input type="text" id="vsan_vlan_gw" name="vsan_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="vsan_vlan_mtu" name="vsan_vlan_mtu" value=""></td></tr>
+<tr><td>NSX Host Overlay</td><td class="ref-value">1114</td><td><input type="text" id="nsx_overlay_vlan_vlan" name="nsx_overlay_vlan_vlan" value=""></td><td class="ref-value">10.11.14.0/24</td><td><input type="text" id="nsx_overlay_vlan_subnet" name="nsx_overlay_vlan_subnet" value=""></td><td class="ref-value">10.11.14.1</td><td><input type="text" id="nsx_overlay_vlan_gw" name="nsx_overlay_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="nsx_overlay_vlan_mtu" name="nsx_overlay_vlan_mtu" value=""></td></tr>
+<tr><td>vSphere Replication</td><td class="ref-value">1116</td><td><input type="text" id="vsphere_repl_vlan_vlan" name="vsphere_repl_vlan_vlan" value=""></td><td class="ref-value">10.11.16.0/24</td><td><input type="text" id="vsphere_repl_vlan_subnet" name="vsphere_repl_vlan_subnet" value=""></td><td class="ref-value">10.11.16.1</td><td><input type="text" id="vsphere_repl_vlan_gw" name="vsphere_repl_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="vsphere_repl_vlan_mtu" name="vsphere_repl_vlan_mtu" value=""></td></tr>
+<tr><td>NSX Edge Uplink 1</td><td class="ref-value">1117</td><td><input type="text" id="nsx_edge_up1_vlan_vlan" name="nsx_edge_up1_vlan_vlan" value=""></td><td class="ref-value">10.11.17.0/24</td><td><input type="text" id="nsx_edge_up1_vlan_subnet" name="nsx_edge_up1_vlan_subnet" value=""></td><td class="ref-value">10.11.17.1</td><td><input type="text" id="nsx_edge_up1_vlan_gw" name="nsx_edge_up1_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="nsx_edge_up1_vlan_mtu" name="nsx_edge_up1_vlan_mtu" value=""></td></tr>
+<tr><td>NSX Edge Uplink 2</td><td class="ref-value">1118</td><td><input type="text" id="nsx_edge_up2_vlan_vlan" name="nsx_edge_up2_vlan_vlan" value=""></td><td class="ref-value">10.11.18.0/24</td><td><input type="text" id="nsx_edge_up2_vlan_subnet" name="nsx_edge_up2_vlan_subnet" value=""></td><td class="ref-value">10.11.18.1</td><td><input type="text" id="nsx_edge_up2_vlan_gw" name="nsx_edge_up2_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="nsx_edge_up2_vlan_mtu" name="nsx_edge_up2_vlan_mtu" value=""></td></tr>
+<tr><td>NSX Edge Overlay</td><td class="ref-value">1119</td><td><input type="text" id="nsx_edge_ol_vlan_vlan" name="nsx_edge_ol_vlan_vlan" value=""></td><td class="ref-value">10.11.19.0/24</td><td><input type="text" id="nsx_edge_ol_vlan_subnet" name="nsx_edge_ol_vlan_subnet" value=""></td><td class="ref-value">10.11.19.1</td><td><input type="text" id="nsx_edge_ol_vlan_gw" name="nsx_edge_ol_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="nsx_edge_ol_vlan_mtu" name="nsx_edge_ol_vlan_mtu" value=""></td></tr>
+<tr><td>NSX RTEP Overlay</td><td class="ref-value">1120</td><td><input type="text" id="nsx_rtep_vlan_vlan" name="nsx_rtep_vlan_vlan" value=""></td><td class="ref-value">10.11.20.0/24</td><td><input type="text" id="nsx_rtep_vlan_subnet" name="nsx_rtep_vlan_subnet" value=""></td><td class="ref-value">10.11.20.1</td><td><input type="text" id="nsx_rtep_vlan_gw" name="nsx_rtep_vlan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="nsx_rtep_vlan_mtu" name="nsx_rtep_vlan_mtu" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Mgmt Domain BGP (Primary AZ)</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="bgp_edge_as">NSX Edge Nodes AS</label><input type="text" id="bgp_edge_as" name="bgp_edge_as" value="65101"></div>
+<div class="form-group"><label for="bgp_tor1_ip">ToR 1 IP Address</label><input type="text" id="bgp_tor1_ip" name="bgp_tor1_ip" value="10.11.17.10"></div>
+<div class="form-group"><label for="bgp_tor1_as">ToR 1 AS</label><input type="text" id="bgp_tor1_as" name="bgp_tor1_as" value="65111"></div>
+<div class="form-group"><label for="bgp_tor1_pwd">ToR 1 BGP Password</label><input type="password" id="bgp_tor1_pwd" name="bgp_tor1_pwd" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="bgp_tor2_ip">ToR 2 IP Address</label><input type="text" id="bgp_tor2_ip" name="bgp_tor2_ip" value="10.11.18.10"></div>
+<div class="form-group"><label for="bgp_tor2_as">ToR 2 AS</label><input type="text" id="bgp_tor2_as" name="bgp_tor2_as" value="65111"></div>
+<div class="form-group"><label for="bgp_tor2_pwd">ToR 2 BGP Password</label><input type="password" id="bgp_tor2_pwd" name="bgp_tor2_pwd" value="VMw@re1!" autocomplete="off"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Workload Domain VLAN/IP Subnets (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Function</th><th>Ref VLAN</th><th>Your VLAN</th><th>Ref Subnet</th><th>Your Subnet</th><th>Ref Gateway</th><th>Your Gateway</th><th>Ref MTU</th><th>Your MTU</th></tr></thead>
+<tbody>
+<tr><td>Management VM Network</td><td class="ref-value">1310</td><td><input type="text" id="wld_mgmt_vlan_vlan" name="wld_mgmt_vlan_vlan" value=""></td><td class="ref-value">10.13.10.0/24</td><td><input type="text" id="wld_mgmt_vlan_subnet" name="wld_mgmt_vlan_subnet" value=""></td><td class="ref-value">10.13.10.1</td><td><input type="text" id="wld_mgmt_vlan_gw" name="wld_mgmt_vlan_gw" value=""></td><td class="ref-value">1500</td><td><input type="text" id="wld_mgmt_vlan_mtu" name="wld_mgmt_vlan_mtu" value=""></td></tr>
+<tr><td>ESXi Management Network</td><td class="ref-value">1311</td><td><input type="text" id="wld_esxi_mgmt_vlan" name="wld_esxi_mgmt_vlan" value=""></td><td class="ref-value">10.13.11.0/24</td><td><input type="text" id="wld_esxi_mgmt_subnet" name="wld_esxi_mgmt_subnet" value=""></td><td class="ref-value">10.13.11.1</td><td><input type="text" id="wld_esxi_mgmt_gw" name="wld_esxi_mgmt_gw" value=""></td><td class="ref-value">1500</td><td><input type="text" id="wld_esxi_mgmt_mtu" name="wld_esxi_mgmt_mtu" value=""></td></tr>
+<tr><td>vMotion Network</td><td class="ref-value">1312</td><td><input type="text" id="wld_vmotion_vlan" name="wld_vmotion_vlan" value=""></td><td class="ref-value">10.13.12.0/24</td><td><input type="text" id="wld_vmotion_subnet" name="wld_vmotion_subnet" value=""></td><td class="ref-value">10.13.12.1</td><td><input type="text" id="wld_vmotion_gw" name="wld_vmotion_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_vmotion_mtu" name="wld_vmotion_mtu" value=""></td></tr>
+<tr><td>Principal Storage (vSAN-ESA)</td><td class="ref-value">1313</td><td><input type="text" id="wld_vsan_vlan" name="wld_vsan_vlan" value=""></td><td class="ref-value">10.13.13.0/24</td><td><input type="text" id="wld_vsan_subnet" name="wld_vsan_subnet" value=""></td><td class="ref-value">10.13.13.1</td><td><input type="text" id="wld_vsan_gw" name="wld_vsan_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_vsan_mtu" name="wld_vsan_mtu" value=""></td></tr>
+<tr><td>NSX Host Overlay</td><td class="ref-value">1314</td><td><input type="text" id="wld_nsx_overlay_vlan" name="wld_nsx_overlay_vlan" value=""></td><td class="ref-value">10.13.14.0/24</td><td><input type="text" id="wld_nsx_overlay_subnet" name="wld_nsx_overlay_subnet" value=""></td><td class="ref-value">10.13.14.1</td><td><input type="text" id="wld_nsx_overlay_gw" name="wld_nsx_overlay_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_nsx_overlay_mtu" name="wld_nsx_overlay_mtu" value=""></td></tr>
+<tr><td>Secondary Storage (NFS)</td><td class="ref-value">1315</td><td><input type="text" id="wld_nfs_vlan" name="wld_nfs_vlan" value=""></td><td class="ref-value">10.13.15.0/24</td><td><input type="text" id="wld_nfs_subnet" name="wld_nfs_subnet" value=""></td><td class="ref-value">10.13.15.1</td><td><input type="text" id="wld_nfs_gw" name="wld_nfs_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_nfs_mtu" name="wld_nfs_mtu" value=""></td></tr>
+<tr><td>vSphere Replication</td><td class="ref-value">1316</td><td><input type="text" id="wld_vsphere_repl_vlan" name="wld_vsphere_repl_vlan" value=""></td><td class="ref-value">10.13.16.0/24</td><td><input type="text" id="wld_vsphere_repl_subnet" name="wld_vsphere_repl_subnet" value=""></td><td class="ref-value">10.13.16.1</td><td><input type="text" id="wld_vsphere_repl_gw" name="wld_vsphere_repl_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_vsphere_repl_mtu" name="wld_vsphere_repl_mtu" value=""></td></tr>
+<tr><td>NSX Edge Uplink 1</td><td class="ref-value">1317</td><td><input type="text" id="wld_edge_up1_vlan" name="wld_edge_up1_vlan" value=""></td><td class="ref-value">10.13.17.0/24</td><td><input type="text" id="wld_edge_up1_subnet" name="wld_edge_up1_subnet" value=""></td><td class="ref-value">10.13.17.1</td><td><input type="text" id="wld_edge_up1_gw" name="wld_edge_up1_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_edge_up1_mtu" name="wld_edge_up1_mtu" value=""></td></tr>
+<tr><td>NSX Edge Uplink 2</td><td class="ref-value">1318</td><td><input type="text" id="wld_edge_up2_vlan" name="wld_edge_up2_vlan" value=""></td><td class="ref-value">10.13.18.0/24</td><td><input type="text" id="wld_edge_up2_subnet" name="wld_edge_up2_subnet" value=""></td><td class="ref-value">10.13.18.1</td><td><input type="text" id="wld_edge_up2_gw" name="wld_edge_up2_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_edge_up2_mtu" name="wld_edge_up2_mtu" value=""></td></tr>
+<tr><td>NSX Edge Overlay</td><td class="ref-value">1319</td><td><input type="text" id="wld_edge_ol_vlan" name="wld_edge_ol_vlan" value=""></td><td class="ref-value">10.13.19.0/24</td><td><input type="text" id="wld_edge_ol_subnet" name="wld_edge_ol_subnet" value=""></td><td class="ref-value">10.13.19.1</td><td><input type="text" id="wld_edge_ol_gw" name="wld_edge_ol_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_edge_ol_mtu" name="wld_edge_ol_mtu" value=""></td></tr>
+<tr><td>NSX RTEP Overlay</td><td class="ref-value">1320</td><td><input type="text" id="wld_rtep_vlan" name="wld_rtep_vlan" value=""></td><td class="ref-value">10.13.20.0/24</td><td><input type="text" id="wld_rtep_subnet" name="wld_rtep_subnet" value=""></td><td class="ref-value">10.13.20.1</td><td><input type="text" id="wld_rtep_gw" name="wld_rtep_gw" value=""></td><td class="ref-value">9000</td><td><input type="text" id="wld_rtep_mtu" name="wld_rtep_mtu" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-network-inputs-vvs">
+<div class="tab-description">Kubernetes and Validated Solution Network Segments</div>
+<div class="section-card">
+<div class="section-header">📄 Kubernetes Network Segments (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Function</th><th>Ref VLAN</th><th>Your VLAN</th><th>Ref Subnet</th><th>Your Subnet</th><th>Ref Gateway</th><th>Your Gateway</th><th>Ref MTU</th><th>Your MTU</th></tr></thead>
+<tbody>
+<tr><td>K8s Management Segment</td><td class="ref-value">n/a</td><td><input type="text" id="k8s_mgmt_seg_vlan" name="k8s_mgmt_seg_vlan" value=""></td><td class="ref-value">192.168.20.0/24</td><td><input type="text" id="k8s_mgmt_seg_subnet" name="k8s_mgmt_seg_subnet" value=""></td><td class="ref-value">192.168.20.1</td><td><input type="text" id="k8s_mgmt_seg_gw" name="k8s_mgmt_seg_gw" value=""></td><td class="ref-value">1500</td><td><input type="text" id="k8s_mgmt_seg_mtu" name="k8s_mgmt_seg_mtu" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Kubernetes IP Pool Subnets (Primary AZ)</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="ingress_pool">Ingress Pool (LB)</label><input type="text" id="ingress_pool" name="ingress_pool" value="192.168.21.0/24"></div>
+<div class="form-group"><label for="egress_pool">Egress Pool (NAT)</label><input type="text" id="egress_pool" name="egress_pool" value="192.168.22.0/24"></div>
+<div class="form-group"><label for="pod_pool_supervisor">Pod Pool (Supervisor)</label><input type="text" id="pod_pool_supervisor" name="pod_pool_supervisor" value="100.100.0.0/20"></div>
+<div class="form-group"><label for="service_pool_supervisor">Service Pool (Supervisor)</label><input type="text" id="service_pool_supervisor" name="service_pool_supervisor" value="100.200.0.0/22"></div>
+<div class="form-group"><label for="pod_pool_tkc">Pod Pool (Tanzu K8s)</label><input type="text" id="pod_pool_tkc" name="pod_pool_tkc" value="192.0.2.0/16"></div>
+<div class="form-group"><label for="service_pool_tkc">Service Pool (Tanzu K8s)</label><input type="text" id="service_pool_tkc" name="service_pool_tkc" value="198.51.100.0/12"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Private Cloud Automation Networks</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="aria_k8s_cluster">Aria Automation K8s Cluster Network</label><input type="text" id="aria_k8s_cluster" name="aria_k8s_cluster" value="10.244.0.0/22"></div>
+<div class="form-group"><label for="aria_k8s_service">Aria Automation K8s Service Network</label><input type="text" id="aria_k8s_service" name="aria_k8s_service" value="10.244.4.0/22"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-name-ip-vm">
+<div class="tab-description">Hostnames and IP Addresses for virtual infrastructure components</div>
+<div class="section-card">
+<div class="section-header">📄 External Services Naming</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="ntp1_local">NTP Server 1 (Local Instance)</label><input type="text" id="ntp1_local" name="ntp1_local" value="ntp.sfo.rainpole.io"></div>
+<div class="form-group"><label for="ntp2_local">NTP Server 2 (Local Instance)</label><input type="text" id="ntp2_local" name="ntp2_local" value="n/a"></div>
+<div class="form-group"><label for="ntp1_cross">NTP Server 1 (Cross-Instance)</label><input type="text" id="ntp1_cross" name="ntp1_cross" value="ntp.sfo.rainpole.io"></div>
+<div class="form-group"><label for="ntp2_cross">NTP Server 2 (Cross-Instance)</label><input type="text" id="ntp2_cross" name="ntp2_cross" value="ntp.lax.rainpole.io"></div>
+<div class="form-group"><label for="parent_dns_zone">Parent DNS Zone</label><input type="text" id="parent_dns_zone" name="parent_dns_zone" value="rainpole.io"></div>
+<div class="form-group"><label for="child_dns_zone">Child DNS Zone</label><input type="text" id="child_dns_zone" name="child_dns_zone" value="sfo.rainpole.io"></div>
+<div class="form-group"><label for="dns1_local">DNS Server 1 (Local)</label><input type="text" id="dns1_local" name="dns1_local" value="10.11.10.4"></div>
+<div class="form-group"><label for="dns2_local">DNS Server 2 (Local)</label><input type="text" id="dns2_local" name="dns2_local" value="10.11.10.5"></div>
+<div class="form-group"><label for="domain_controller">Domain Controller</label><input type="text" id="domain_controller" name="domain_controller" value="sfo-ad01"></div>
+<div class="form-group"><label for="ca_fqdn">Certificate Authority FQDN</label><input type="text" id="ca_fqdn" name="ca_fqdn" value="rpl-ad01.rainpole.io"></div>
+<div class="form-group"><label for="ca_name">Certificate Authority Name</label><input type="text" id="ca_name" name="ca_name" value="rainpole-DC-RPL01-CA"></div>
+<div class="form-group"><label for="sftp_server">SFTP Server</label><input type="text" id="sftp_server" name="sftp_server" value="20.10.5.10"></div>
+<div class="form-group"><label for="smtp_server">SMTP Server</label><input type="text" id="smtp_server" name="smtp_server" value="smtp.rainpole.io"></div>
+<div class="form-group"><label for="smtp_port">SMTP Port</label><input type="number" id="smtp_port" name="smtp_port" value="25" ></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Mgmt Domain Virtual Infra (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Component</th><th>Ref Hostname</th><th>Your Hostname</th><th>Ref IP</th><th>Your IP</th></tr></thead>
+<tbody>
+<tr><td>Cloud Builder</td><td class="ref-value">sfo-cb01</td><td><input type="text" id="cb_hostname_host" name="cb_hostname_host" value=""></td><td class="ref-value">10.11.10.57</td><td><input type="text" id="cb_hostname_ip" name="cb_hostname_ip" value=""></td></tr>
+<tr><td>SDDC Manager</td><td class="ref-value">sfo-vcf01</td><td><input type="text" id="sddc_mgr_hostname_host" name="sddc_mgr_hostname_host" value=""></td><td class="ref-value">10.11.10.59</td><td><input type="text" id="sddc_mgr_hostname_ip" name="sddc_mgr_hostname_ip" value=""></td></tr>
+<tr><td>vCenter Server</td><td class="ref-value">sfo-m01-vc01</td><td><input type="text" id="vc_hostname_host" name="vc_hostname_host" value=""></td><td class="ref-value">10.11.10.70</td><td><input type="text" id="vc_hostname_ip" name="vc_hostname_ip" value=""></td></tr>
+<tr><td>NSX Manager VIP</td><td class="ref-value">sfo-m01-nsx01</td><td><input type="text" id="nsx_vip_host" name="nsx_vip_host" value=""></td><td class="ref-value">10.11.10.71</td><td><input type="text" id="nsx_vip_ip" name="nsx_vip_ip" value=""></td></tr>
+<tr><td>NSX Manager Node A</td><td class="ref-value">sfo-m01-nsx01a</td><td><input type="text" id="nsx_a_host" name="nsx_a_host" value=""></td><td class="ref-value">10.11.10.72</td><td><input type="text" id="nsx_a_ip" name="nsx_a_ip" value=""></td></tr>
+<tr><td>NSX Manager Node B</td><td class="ref-value">sfo-m01-nsx01b</td><td><input type="text" id="nsx_b_host" name="nsx_b_host" value=""></td><td class="ref-value">10.11.10.73</td><td><input type="text" id="nsx_b_ip" name="nsx_b_ip" value=""></td></tr>
+<tr><td>NSX Manager Node C</td><td class="ref-value">sfo-m01-nsx01c</td><td><input type="text" id="nsx_c_host" name="nsx_c_host" value=""></td><td class="ref-value">10.11.10.74</td><td><input type="text" id="nsx_c_ip" name="nsx_c_ip" value=""></td></tr>
+<tr><td>NSX Global Manager VIP</td><td class="ref-value">sfo-m01-nsx-gm01</td><td><input type="text" id="nsx_gm_vip_host" name="nsx_gm_vip_host" value=""></td><td class="ref-value">10.11.10.81</td><td><input type="text" id="nsx_gm_vip_ip" name="nsx_gm_vip_ip" value=""></td></tr>
+<tr><td>NSX GM Node A</td><td class="ref-value">sfo-m01-nsx-gm01a</td><td><input type="text" id="nsx_gm_a_host" name="nsx_gm_a_host" value=""></td><td class="ref-value">10.11.10.82</td><td><input type="text" id="nsx_gm_a_ip" name="nsx_gm_a_ip" value=""></td></tr>
+<tr><td>AVI Load Balancer VIP</td><td class="ref-value">sfo-m01-avlb01</td><td><input type="text" id="avi_vip_host" name="avi_vip_host" value=""></td><td class="ref-value">10.11.10.91</td><td><input type="text" id="avi_vip_ip" name="avi_vip_ip" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Workload Domain Virtual Infra (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Component</th><th>Ref Hostname</th><th>Your Hostname</th><th>Ref IP</th><th>Your IP</th></tr></thead>
+<tbody>
+<tr><td>vCenter Server</td><td class="ref-value">sfo-w01-vc01</td><td><input type="text" id="wld_vc_hostname_host" name="wld_vc_hostname_host" value=""></td><td class="ref-value">10.11.10.130</td><td><input type="text" id="wld_vc_hostname_ip" name="wld_vc_hostname_ip" value=""></td></tr>
+<tr><td>NSX Manager VIP</td><td class="ref-value">sfo-w01-nsx01</td><td><input type="text" id="wld_nsx_vip_host" name="wld_nsx_vip_host" value=""></td><td class="ref-value">10.11.10.131</td><td><input type="text" id="wld_nsx_vip_ip" name="wld_nsx_vip_ip" value=""></td></tr>
+<tr><td>NSX Manager Node A</td><td class="ref-value">sfo-w01-nsx01a</td><td><input type="text" id="wld_nsx_a_host" name="wld_nsx_a_host" value=""></td><td class="ref-value">10.11.10.132</td><td><input type="text" id="wld_nsx_a_ip" name="wld_nsx_a_ip" value=""></td></tr>
+<tr><td>NSX Manager Node B</td><td class="ref-value">sfo-w01-nsx01b</td><td><input type="text" id="wld_nsx_b_host" name="wld_nsx_b_host" value=""></td><td class="ref-value">10.11.10.133</td><td><input type="text" id="wld_nsx_b_ip" name="wld_nsx_b_ip" value=""></td></tr>
+<tr><td>NSX Manager Node C</td><td class="ref-value">sfo-w01-nsx01c</td><td><input type="text" id="wld_nsx_c_host" name="wld_nsx_c_host" value=""></td><td class="ref-value">10.11.10.134</td><td><input type="text" id="wld_nsx_c_ip" name="wld_nsx_c_ip" value=""></td></tr>
+<tr><td>NSX Global Manager VIP</td><td class="ref-value">sfo-w01-nsx-gm01</td><td><input type="text" id="wld_nsx_gm_vip_host" name="wld_nsx_gm_vip_host" value=""></td><td class="ref-value">10.11.10.141</td><td><input type="text" id="wld_nsx_gm_vip_ip" name="wld_nsx_gm_vip_ip" value=""></td></tr>
+<tr><td>AVI Load Balancer VIP</td><td class="ref-value">sfo-w01-avlb01</td><td><input type="text" id="wld_avi_vip_host" name="wld_avi_vip_host" value=""></td><td class="ref-value">10.11.10.151</td><td><input type="text" id="wld_avi_vip_ip" name="wld_avi_vip_ip" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-name-ip-rack">
+<div class="tab-description">ESXi host names and IP addresses, edge nodes, pool ranges</div>
+<div class="section-card">
+<div class="section-header">📄 Mgmt Domain ESXi Hosts (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Component</th><th>Ref Hostname</th><th>Your Hostname</th><th>Ref IP</th><th>Your IP</th></tr></thead>
+<tbody>
+<tr><td>ESXi Host 1</td><td class="ref-value">sfo01-m01-r01-esx01</td><td><input type="text" id="mgmt_esxi_01_host" name="mgmt_esxi_01_host" value=""></td><td class="ref-value">10.11.11.101</td><td><input type="text" id="mgmt_esxi_01_ip" name="mgmt_esxi_01_ip" value=""></td></tr>
+<tr><td>ESXi Host 2</td><td class="ref-value">sfo01-m01-r01-esx02</td><td><input type="text" id="mgmt_esxi_02_host" name="mgmt_esxi_02_host" value=""></td><td class="ref-value">10.11.11.102</td><td><input type="text" id="mgmt_esxi_02_ip" name="mgmt_esxi_02_ip" value=""></td></tr>
+<tr><td>ESXi Host 3</td><td class="ref-value">sfo01-m01-r01-esx03</td><td><input type="text" id="mgmt_esxi_03_host" name="mgmt_esxi_03_host" value=""></td><td class="ref-value">10.11.11.103</td><td><input type="text" id="mgmt_esxi_03_ip" name="mgmt_esxi_03_ip" value=""></td></tr>
+<tr><td>ESXi Host 4</td><td class="ref-value">sfo01-m01-r01-esx04</td><td><input type="text" id="mgmt_esxi_04_host" name="mgmt_esxi_04_host" value=""></td><td class="ref-value">10.11.11.104</td><td><input type="text" id="mgmt_esxi_04_ip" name="mgmt_esxi_04_ip" value=""></td></tr>
+<tr><td>ESXi Host 5</td><td class="ref-value">sfo01-m01-r01-esx05</td><td><input type="text" id="mgmt_esxi_05_host" name="mgmt_esxi_05_host" value=""></td><td class="ref-value">10.11.11.105</td><td><input type="text" id="mgmt_esxi_05_ip" name="mgmt_esxi_05_ip" value=""></td></tr>
+<tr><td>ESXi Host 6</td><td class="ref-value">sfo01-m01-r01-esx06</td><td><input type="text" id="mgmt_esxi_06_host" name="mgmt_esxi_06_host" value=""></td><td class="ref-value">10.11.11.106</td><td><input type="text" id="mgmt_esxi_06_ip" name="mgmt_esxi_06_ip" value=""></td></tr>
+<tr><td>ESXi Host 7</td><td class="ref-value">sfo01-m01-r01-esx07</td><td><input type="text" id="mgmt_esxi_07_host" name="mgmt_esxi_07_host" value=""></td><td class="ref-value">10.11.11.107</td><td><input type="text" id="mgmt_esxi_07_ip" name="mgmt_esxi_07_ip" value=""></td></tr>
+<tr><td>ESXi Host 8</td><td class="ref-value">sfo01-m01-r01-esx08</td><td><input type="text" id="mgmt_esxi_08_host" name="mgmt_esxi_08_host" value=""></td><td class="ref-value">10.11.11.108</td><td><input type="text" id="mgmt_esxi_08_ip" name="mgmt_esxi_08_ip" value=""></td></tr>
+<tr><td>ESXi Host 9</td><td class="ref-value">sfo01-m01-r01-esx09</td><td><input type="text" id="mgmt_esxi_09_host" name="mgmt_esxi_09_host" value=""></td><td class="ref-value">10.11.11.109</td><td><input type="text" id="mgmt_esxi_09_ip" name="mgmt_esxi_09_ip" value=""></td></tr>
+<tr><td>ESXi Host 10</td><td class="ref-value">sfo01-m01-r01-esx10</td><td><input type="text" id="mgmt_esxi_10_host" name="mgmt_esxi_10_host" value=""></td><td class="ref-value">10.11.11.110</td><td><input type="text" id="mgmt_esxi_10_ip" name="mgmt_esxi_10_ip" value=""></td></tr>
+<tr><td>ESXi Host 11</td><td class="ref-value">sfo01-m01-r01-esx11</td><td><input type="text" id="mgmt_esxi_11_host" name="mgmt_esxi_11_host" value=""></td><td class="ref-value">10.11.11.111</td><td><input type="text" id="mgmt_esxi_11_ip" name="mgmt_esxi_11_ip" value=""></td></tr>
+<tr><td>ESXi Host 12</td><td class="ref-value">sfo01-m01-r01-esx12</td><td><input type="text" id="mgmt_esxi_12_host" name="mgmt_esxi_12_host" value=""></td><td class="ref-value">10.11.11.112</td><td><input type="text" id="mgmt_esxi_12_ip" name="mgmt_esxi_12_ip" value=""></td></tr>
+<tr><td>ESXi Host 13</td><td class="ref-value">sfo01-m01-r01-esx13</td><td><input type="text" id="mgmt_esxi_13_host" name="mgmt_esxi_13_host" value=""></td><td class="ref-value">10.11.11.113</td><td><input type="text" id="mgmt_esxi_13_ip" name="mgmt_esxi_13_ip" value=""></td></tr>
+<tr><td>ESXi Host 14</td><td class="ref-value">sfo01-m01-r01-esx14</td><td><input type="text" id="mgmt_esxi_14_host" name="mgmt_esxi_14_host" value=""></td><td class="ref-value">10.11.11.114</td><td><input type="text" id="mgmt_esxi_14_ip" name="mgmt_esxi_14_ip" value=""></td></tr>
+<tr><td>ESXi Host 15</td><td class="ref-value">sfo01-m01-r01-esx15</td><td><input type="text" id="mgmt_esxi_15_host" name="mgmt_esxi_15_host" value=""></td><td class="ref-value">10.11.11.115</td><td><input type="text" id="mgmt_esxi_15_ip" name="mgmt_esxi_15_ip" value=""></td></tr>
+<tr><td>ESXi Host 16</td><td class="ref-value">sfo01-m01-r01-esx16</td><td><input type="text" id="mgmt_esxi_16_host" name="mgmt_esxi_16_host" value=""></td><td class="ref-value">10.11.11.116</td><td><input type="text" id="mgmt_esxi_16_ip" name="mgmt_esxi_16_ip" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Mgmt Domain Edge Nodes (Primary AZ)</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Component</th><th>Ref Hostname</th><th>Your Hostname</th><th>Ref IP</th><th>Your IP</th></tr></thead>
+<tbody>
+<tr><td>Edge Node 1</td><td class="ref-value">sfo-m01-r01-en01</td><td><input type="text" id="mgmt_edge1_host" name="mgmt_edge1_host" value=""></td><td class="ref-value">10.11.10.75</td><td><input type="text" id="mgmt_edge1_ip" name="mgmt_edge1_ip" value=""></td></tr>
+<tr><td>Edge Node 2</td><td class="ref-value">sfo-m01-r01-en02</td><td><input type="text" id="mgmt_edge2_host" name="mgmt_edge2_host" value=""></td><td class="ref-value">10.11.10.76</td><td><input type="text" id="mgmt_edge2_ip" name="mgmt_edge2_ip" value=""></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Network Pool Ranges (Primary AZ)</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="vmotion_pool_start">vMotion Pool Start IP</label><input type="text" id="vmotion_pool_start" name="vmotion_pool_start" value="10.11.12.101"></div>
+<div class="form-group"><label for="vmotion_pool_end">vMotion Pool End IP</label><input type="text" id="vmotion_pool_end" name="vmotion_pool_end" value="10.11.12.116"></div>
+<div class="form-group"><label for="vsan_pool_start">vSAN Pool Start IP</label><input type="text" id="vsan_pool_start" name="vsan_pool_start" value="10.11.13.101"></div>
+<div class="form-group"><label for="vsan_pool_end">vSAN Pool End IP</label><input type="text" id="vsan_pool_end" name="vsan_pool_end" value="10.11.13.116"></div>
+<div class="form-group"><label for="overlay_pool_start">Host Overlay Pool Start IP</label><input type="text" id="overlay_pool_start" name="overlay_pool_start" value="10.11.14.101"></div>
+<div class="form-group"><label for="overlay_pool_end">Host Overlay Pool End IP</label><input type="text" id="overlay_pool_end" name="overlay_pool_end" value="10.11.14.132"></div>
+<div class="form-group"><label for="rtep_pool_start">RTEP Pool Start IP</label><input type="text" id="rtep_pool_start" name="rtep_pool_start" value="10.11.20.101"></div>
+<div class="form-group"><label for="rtep_pool_end">RTEP Pool End IP</label><input type="text" id="rtep_pool_end" name="rtep_pool_end" value="10.11.20.116"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-sddc-inputs-common">
+<div class="tab-description">Cloud Builder, Credentials, Licenses, and Common Settings</div>
+<div class="section-card">
+<div class="section-header">📄 Cloud Builder Inputs</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="infra_host_fqdn">Infrastructure Host FQDN</label><input type="text" id="infra_host_fqdn" name="infra_host_fqdn" value="infra-esx01.rainpole.io"></div>
+<div class="form-group"><label for="infra_ds_name">Infrastructure Datastore</label><input type="text" id="infra_ds_name" name="infra_ds_name" value="infra-vmfs01"></div>
+<div class="form-group"><label for="infra_pg_name">Infrastructure Portgroup</label><input type="text" id="infra_pg_name" name="infra_pg_name" value="infra-portgroup01"></div>
+<div class="form-group"><label for="cb_admin_user">Cloud Builder Admin User</label><input type="text" id="cb_admin_user" name="cb_admin_user" value="admin"></div>
+<div class="form-group"><label for="cb_admin_pwd">Cloud Builder Admin Password</label><input type="password" id="cb_admin_pwd" name="cb_admin_pwd" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="cb_root_pwd">Cloud Builder Root Password</label><input type="password" id="cb_root_pwd" name="cb_root_pwd" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Common Licenses</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="license_vcenter">vCenter Server Standard</label><input type="text" id="license_vcenter" name="license_vcenter" value="N/A"></div>
+<div class="form-group"><label for="license_esxi">ESXi Enterprise Plus</label><input type="text" id="license_esxi" name="license_esxi" value="N/A"></div>
+<div class="form-group"><label for="license_vsan">vSAN Advanced or Higher</label><input type="text" id="license_vsan" name="license_vsan" value="N/A"></div>
+<div class="form-group"><label for="license_nsx">NSX</label><input type="text" id="license_nsx" name="license_nsx" value="N/A"></div>
+<div class="form-group"><label for="license_tanzu">Tanzu Edition</label><input type="text" id="license_tanzu" name="license_tanzu" value="N/A"></div>
+<div class="form-group"><label for="license_aria">VMware Aria Suite</label><input type="text" id="license_aria" name="license_aria" value="N/A"></div>
+<div class="form-group"><label for="license_srm">Site Recovery Manager</label><input type="text" id="license_srm" name="license_srm" value="N/A"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Virtual Infrastructure Credentials</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="pwd_esxi_root">ESXi root Password</label><input type="password" id="pwd_esxi_root" name="pwd_esxi_root" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_vc_admin">vCenter administrator@vsphere.local</label><input type="password" id="pwd_vc_admin" name="pwd_vc_admin" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_vc_root">vCenter root Password</label><input type="password" id="pwd_vc_root" name="pwd_vc_root" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_nsx_root_lm">NSX root (Local Manager)</label><input type="password" id="pwd_nsx_root_lm" name="pwd_nsx_root_lm" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_nsx_admin_lm">NSX admin (Local Manager)</label><input type="password" id="pwd_nsx_admin_lm" name="pwd_nsx_admin_lm" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_nsx_root_edge">NSX root (Edge Node)</label><input type="password" id="pwd_nsx_root_edge" name="pwd_nsx_root_edge" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_nsx_admin_edge">NSX admin (Edge Node)</label><input type="password" id="pwd_nsx_admin_edge" name="pwd_nsx_admin_edge" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_nsx_root_gm">NSX root (Global Manager)</label><input type="password" id="pwd_nsx_root_gm" name="pwd_nsx_root_gm" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_nsx_admin_gm">NSX admin (Global Manager)</label><input type="password" id="pwd_nsx_admin_gm" name="pwd_nsx_admin_gm" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_sddc_root">SDDC Manager root</label><input type="password" id="pwd_sddc_root" name="pwd_sddc_root" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_sddc_vcf">SDDC Manager vcf</label><input type="password" id="pwd_sddc_vcf" name="pwd_sddc_vcf" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="pwd_sddc_admin">SDDC Manager admin@local</label><input type="password" id="pwd_sddc_admin" name="pwd_sddc_admin" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="svc_vmware_depot_user">VMware Depot Username</label><input type="text" id="svc_vmware_depot_user" name="svc_vmware_depot_user" value="svc-my-vmware"></div>
+<div class="form-group"><label for="svc_vmware_depot_pwd">VMware Depot Password</label><input type="password" id="svc_vmware_depot_pwd" name="svc_vmware_depot_pwd" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Management Domain VI Inputs (Primary AZ)</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="mgmt_domain_name">VCF Mgmt Domain Name</label><input type="text" id="mgmt_domain_name" name="mgmt_domain_name" value="sfo-m01"></div>
+<div class="form-group"><label for="mgmt_ca_user">Microsoft CA Username</label><input type="text" id="mgmt_ca_user" name="mgmt_ca_user" value="svc-vcf-ca"></div>
+<div class="form-group"><label for="enable_ceip">Enable CEIP</label><select id="enable_ceip" name="enable_ceip"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+<div class="form-group"><label for="enable_fips">Enable FIPS</label><select id="enable_fips" name="enable_fips"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+<div class="form-group"><label for="vss_mgmt_name">vSS Management Name</label><input type="text" id="vss_mgmt_name" name="vss_mgmt_name" value="vSwitch0"></div>
+<div class="form-group"><label for="vds_name">Primary vDS Name</label><input type="text" id="vds_name" name="vds_name" value="sfo-m01-cl01-vds01"></div>
+<div class="form-group"><label for="vds_pnics">Primary vDS pNICs</label><input type="text" id="vds_pnics" name="vds_pnics" value="vmnic0,vmnic1"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-active-directory">
+<div class="tab-description">Active Directory Domains, Service Accounts, and Groups</div>
+<div class="section-card">
+<div class="section-header">📄 Active Directory Details</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="ad_parent_fqdn">Parent FQDN</label><input type="text" id="ad_parent_fqdn" name="ad_parent_fqdn" value="rainpole.io"></div>
+<div class="form-group"><label for="ad_parent_netbios">Parent NETBIOS</label><input type="text" id="ad_parent_netbios" name="ad_parent_netbios" value="RAINPOLE"></div>
+<div class="form-group"><label for="ad_child_fqdn">Child FQDN</label><input type="text" id="ad_child_fqdn" name="ad_child_fqdn" value="sfo.rainpole.io"></div>
+<div class="form-group"><label for="ad_child_netbios">Child NETBIOS</label><input type="text" id="ad_child_netbios" name="ad_child_netbios" value="SFO"></div>
+<div class="form-group"><label for="ad_parent_user_ou">Parent User OU</label><input type="text" id="ad_parent_user_ou" name="ad_parent_user_ou" value="ou=Security Users,dc=rainpole,dc=io"></div>
+<div class="form-group"><label for="ad_parent_group_ou">Parent Group OU</label><input type="text" id="ad_parent_group_ou" name="ad_parent_group_ou" value="ou=Security Groups,dc=rainpole,dc=io"></div>
+<div class="form-group"><label for="ad_child_user_ou">Child User OU</label><input type="text" id="ad_child_user_ou" name="ad_child_user_ou" value="ou=Security Users,dc=sfo,dc=rainpole,dc=io"></div>
+<div class="form-group"><label for="ad_child_group_ou">Child Group OU</label><input type="text" id="ad_child_group_ou" name="ad_child_group_ou" value="ou=Security Groups,dc=sfo,dc=rainpole,dc=io"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Service Accounts - Management Domain</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Purpose</th><th>Domain</th><th>Username</th><th>Password</th></tr></thead>
+<tbody>
+<tr><td>Certificate Authority Access</td><td>Child</td><td><input type="text" id="ad_user_0" name="ad_user_0" value="svc-vcf-ca"></td><td><input type="password" id="ad_pwd_0" name="ad_pwd_0" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Active Directory Bind (WSA)</td><td>Child</td><td><input type="text" id="ad_user_1" name="ad_user_1" value="svc-idm-ad"></td><td><input type="password" id="ad_pwd_1" name="ad_pwd_1" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>AD Bind (vSphere)</td><td>Child</td><td><input type="text" id="ad_user_2" name="ad_user_2" value="svc-vsphere-ad"></td><td><input type="password" id="ad_pwd_2" name="ad_pwd_2" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>AD Bind (NSX)</td><td>Child</td><td><input type="text" id="ad_user_3" name="ad_user_3" value="svc-nsx-ad"></td><td><input type="password" id="ad_pwd_3" name="ad_pwd_3" value="VMw@re1!" autocomplete="off"></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Service Accounts - Validated Solutions</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Purpose</th><th>Domain</th><th>Username</th><th>Password</th></tr></thead>
+<tbody>
+<tr><td>Aria Ops Logs to AD</td><td>Child</td><td><input type="text" id="ad_user_0" name="ad_user_0" value="svc-logs-ad"></td><td><input type="password" id="ad_pwd_0" name="ad_pwd_0" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Operations to VCF</td><td>Child</td><td><input type="text" id="ad_user_1" name="ad_user_1" value="svc-ops-vcf"></td><td><input type="password" id="ad_pwd_1" name="ad_pwd_1" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Operations to vCenter</td><td>Child</td><td><input type="text" id="ad_user_2" name="ad_user_2" value="svc-ops-vsphere"></td><td><input type="password" id="ad_pwd_2" name="ad_pwd_2" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Operations to Aria Automation</td><td>Child</td><td><input type="text" id="ad_user_3" name="ad_user_3" value="svc-ops-cmp"></td><td><input type="password" id="ad_pwd_3" name="ad_pwd_3" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Ops for Networks to AD</td><td>Child</td><td><input type="text" id="ad_user_4" name="ad_user_4" value="svc-net-ad"></td><td><input type="password" id="ad_pwd_4" name="ad_pwd_4" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Ops for Networks to vCenter</td><td>Child</td><td><input type="text" id="ad_user_5" name="ad_user_5" value="svc-net-vsphere"></td><td><input type="password" id="ad_pwd_5" name="ad_pwd_5" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Automation to vSphere</td><td>Child</td><td><input type="text" id="ad_user_6" name="ad_user_6" value="svc-cmp-vsphere"></td><td><input type="password" id="ad_pwd_6" name="ad_pwd_6" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Automation to NSX</td><td>Child</td><td><input type="text" id="ad_user_7" name="ad_user_7" value="svc-cmp-nsx"></td><td><input type="password" id="ad_pwd_7" name="ad_pwd_7" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Automation to SDDC Mgr</td><td>Child</td><td><input type="text" id="ad_user_8" name="ad_user_8" value="svc-cmp-vcf"></td><td><input type="password" id="ad_pwd_8" name="ad_pwd_8" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Orchestrator to vSphere</td><td>Child</td><td><input type="text" id="ad_user_9" name="ad_user_9" value="svc-orch-vsphere"></td><td><input type="password" id="ad_pwd_9" name="ad_pwd_9" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>Aria Automation to Aria Ops</td><td>Child</td><td><input type="text" id="ad_user_10" name="ad_user_10" value="svc-cmp-ops"></td><td><input type="password" id="ad_pwd_10" name="ad_pwd_10" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>HCX to vCenter</td><td>Child</td><td><input type="text" id="ad_user_11" name="ad_user_11" value="svc-hcx-vsphere"></td><td><input type="password" id="ad_pwd_11" name="ad_pwd_11" value="VMw@re1!" autocomplete="off"></td></tr>
+<tr><td>HCX to NSX</td><td>Child</td><td><input type="text" id="ad_user_12" name="ad_user_12" value="svc-hcx-nsx"></td><td><input type="password" id="ad_pwd_12" name="ad_pwd_12" value="VMw@re1!" autocomplete="off"></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 AD Groups</div>
+<div class="section-body">
+<table class="form-table">
+<thead><tr><th>Product</th><th>Domain</th><th>Group Names</th></tr></thead>
+<tbody>
+<tr><td>Aria Suite Lifecycle</td><td>Child</td><td><input type="text" id="ad_group_0" name="ad_group_0" value="gg-lcm-admins, gg-lcm-release-managers, gg-lcm-content-developers" style="width:100%"></td></tr>
+<tr><td>Workspace ONE Access</td><td>Child</td><td><input type="text" id="ad_group_1" name="ad_group_1" value="gg-idm-admins, gg-idm-directory-admins, gg-idm-read-only" style="width:100%"></td></tr>
+<tr><td>SDDC Manager</td><td>Child</td><td><input type="text" id="ad_group_2" name="ad_group_2" value="gg-vcf-admins, gg-vcf-operators, gg-vcf-viewers" style="width:100%"></td></tr>
+<tr><td>vCenter Server</td><td>Child</td><td><input type="text" id="ad_group_3" name="ad_group_3" value="gg-vc-admins, gg-vc-read-only, gg-sso-admins" style="width:100%"></td></tr>
+<tr><td>NSX</td><td>Child</td><td><input type="text" id="ad_group_4" name="ad_group_4" value="gg-nsx-enterprise-admins, gg-nsx-network-admins, gg-nsx-auditors" style="width:100%"></td></tr>
+<tr><td>Kubernetes</td><td>Child</td><td><input type="text" id="ad_group_5" name="ad_group_5" value="gg-kub-admins, gg-kub-readonly" style="width:100%"></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-sddc-inputs-rack">
+<div class="tab-description">SDDC Manager Network Pools and Host Definitions per Rack</div>
+<div class="section-card">
+<div class="section-header">📄 Mgmt Domain Rack 1 (Primary AZ) - Networking</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="sddc_netpool_mgmt">SDDC Mgr Network Pool</label><input type="text" id="sddc_netpool_mgmt" name="sddc_netpool_mgmt" value="sfo-m01-r01-network-pool-01"></div>
+<div class="form-group"><label for="nsx_overlay_profile">NSX Host Overlay Profile</label><input type="text" id="nsx_overlay_profile" name="nsx_overlay_profile" value="sfo-m01-r01-network-profile-01"></div>
+<div class="form-group"><label for="nsx_overlay_pool">NSX Host Overlay Pool</label><input type="text" id="nsx_overlay_pool" name="nsx_overlay_pool" value="sfo-m01-r01-ip-pool01-host"></div>
+<div class="form-group"><label for="nsx_uplink_profile">NSX Uplink Profile</label><input type="text" id="nsx_uplink_profile" name="nsx_uplink_profile" value="sfo-m01-r01-uplink-profile01"></div>
+<div class="form-group"><label for="nsx_edge_overlay_pool">NSX Edge Overlay Pool</label><input type="text" id="nsx_edge_overlay_pool" name="nsx_edge_overlay_pool" value="sfo-m01-r01-ip-pool02-edge"></div>
+<div class="form-group"><label for="nsx_rtep_pool">NSX RTEP Pool</label><input type="text" id="nsx_rtep_pool" name="nsx_rtep_pool" value="sfo-m01-r01-ip-pool-rtep"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Workload Domain Rack 1 (Primary AZ) - Networking</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="wld_netpool">SDDC Mgr Network Pool</label><input type="text" id="wld_netpool" name="wld_netpool" value="sfo-w01-r01-network-pool-01"></div>
+<div class="form-group"><label for="wld_nsx_profile">NSX Host Overlay Profile</label><input type="text" id="wld_nsx_profile" name="wld_nsx_profile" value="sfo-w01-r01-network-profile-01"></div>
+<div class="form-group"><label for="wld_nsx_pool">NSX Host Overlay Pool</label><input type="text" id="wld_nsx_pool" name="wld_nsx_pool" value="sfo-w01-r01-ip-pool01-host"></div>
+<div class="form-group"><label for="wld_uplink_profile">NSX Uplink Profile</label><input type="text" id="wld_uplink_profile" name="wld_uplink_profile" value="sfo-w01-r01-uplink-profile01"></div>
+<div class="form-group"><label for="wld_edge_pool">NSX Edge Overlay Pool</label><input type="text" id="wld_edge_pool" name="wld_edge_pool" value="sfo-w01-r01-ip-pool02-edge"></div>
+<div class="form-group"><label for="wld_rtep_pool">NSX RTEP Pool</label><input type="text" id="wld_rtep_pool" name="wld_rtep_pool" value="sfo-w01-r01-ip-pool-rtep"></div>
+<div class="form-group"><label for="wld_vsan_fd">vSAN Fault Domain</label><input type="text" id="wld_vsan_fd" name="wld_vsan_fd" value="sfo-w01-r01-vsan-fault-domain"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-mgmt-domain-deploy">
+<div class="tab-description">Management Domain deployment configuration values</div>
+<div class="section-card">
+<div class="section-header">📄 Deploy Cloud Builder Appliance</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="cb_esxi_host">ESXi host</label><input type="text" id="cb_esxi_host" name="cb_esxi_host" value="infra-esx01.rainpole.io"></div>
+<div class="form-group"><label for="cb_datastore">Datastore</label><input type="text" id="cb_datastore" name="cb_datastore" value="infra-vmfs01"></div>
+<div class="form-group"><label for="cb_network">Network Mappings</label><input type="text" id="cb_network" name="cb_network" value="infra-portgroup01"></div>
+<div class="form-group"><label for="cb_admin_user_dep">Admin Username</label><input type="text" id="cb_admin_user_dep" name="cb_admin_user_dep" value="admin"></div>
+<div class="form-group"><label for="cb_admin_pwd_dep">Admin Password</label><input type="password" id="cb_admin_pwd_dep" name="cb_admin_pwd_dep" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="cb_root_pwd_dep">Root Password</label><input type="password" id="cb_root_pwd_dep" name="cb_root_pwd_dep" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="cb_hostname_dep">Hostname</label><input type="text" id="cb_hostname_dep" name="cb_hostname_dep" value="sfo-cb01"></div>
+<div class="form-group"><label for="cb_ip_dep">IP Address</label><input type="text" id="cb_ip_dep" name="cb_ip_dep" value="10.11.10.57"></div>
+<div class="form-group"><label for="cb_subnet_dep">Subnet Mask</label><input type="text" id="cb_subnet_dep" name="cb_subnet_dep" value="255.255.255.0"></div>
+<div class="form-group"><label for="cb_gw_dep">Default Gateway</label><input type="text" id="cb_gw_dep" name="cb_gw_dep" value="10.11.11.1"></div>
+<div class="form-group"><label for="cb_dns_dep">DNS Servers</label><input type="text" id="cb_dns_dep" name="cb_dns_dep" value="10.11.10.4,10.11.10.5"></div>
+<div class="form-group"><label for="cb_dns_domain_dep">DNS Domain Name</label><input type="text" id="cb_dns_domain_dep" name="cb_dns_domain_dep" value="sfo.rainpole.io"></div>
+<div class="form-group"><label for="cb_ntp_dep">NTP Servers</label><input type="text" id="cb_ntp_dep" name="cb_ntp_dep" value="ntp.sfo.rainpole.io"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Configure ESXi Hosts on Mgmt Domain</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="esxi_root_pwd">ESXi root password</label><input type="password" id="esxi_root_pwd" name="esxi_root_pwd" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="esxi_vlan_id">VLAN ID</label><input type="text" id="esxi_vlan_id" name="esxi_vlan_id" value="1111"></div>
+<div class="form-group"><label for="esxi_subnet">Subnet Mask</label><input type="text" id="esxi_subnet" name="esxi_subnet" value="255.255.255.0"></div>
+<div class="form-group"><label for="esxi_gw">Default Gateway</label><input type="text" id="esxi_gw" name="esxi_gw" value="10.11.11.1"></div>
+<div class="form-group"><label for="esxi_dns1">Primary DNS</label><input type="text" id="esxi_dns1" name="esxi_dns1" value="10.11.10.4"></div>
+<div class="form-group"><label for="esxi_dns2">Alternate DNS</label><input type="text" id="esxi_dns2" name="esxi_dns2" value="10.11.10.5"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Deployment Parameter Workbook</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="dp_cb_ip">Cloud Builder VM IP</label><input type="text" id="dp_cb_ip" name="dp_cb_ip" value="10.11.10.57"></div>
+<div class="form-group"><label for="dp_admin_user">Admin Username</label><input type="text" id="dp_admin_user" name="dp_admin_user" value="admin"></div>
+<div class="form-group"><label for="dp_admin_pwd">Admin Password</label><input type="password" id="dp_admin_pwd" name="dp_admin_pwd" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content" id="tab-vi-workload-domain">
+<div class="tab-description">Workload Domain deployment configuration values</div>
+<div class="section-card">
+<div class="section-header">📄 Add VASA Provider</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="vasa_name">Name</label><input type="text" id="vasa_name" name="vasa_name" value="sfo-vvols-array"></div>
+<div class="form-group"><label for="vasa_url">URL</label><input type="text" id="vasa_url" name="vasa_url" value="https://vvols-array.sfo.rainpole.io:8443/version.xml"></div>
+<div class="form-group"><label for="vasa_user">User Name</label><input type="text" id="vasa_user" name="vasa_user" value="storage-admin"></div>
+<div class="form-group"><label for="vasa_pwd">Password</label><input type="password" id="vasa_pwd" name="vasa_pwd" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="vasa_container">Container Name</label><input type="text" id="vasa_container" name="vasa_container" value="sfo-w01-container"></div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="section-header">📄 Deploy VI Workload Domain</div>
+<div class="section-body">
+<div class="form-grid">
+<div class="form-group"><label for="wld_storage">Storage Selection</label><select id="wld_storage" name="wld_storage"><option value="vSAN">vSAN</option><option value="VMFS">VMFS</option><option value="vVOLS">vVOLS</option><option value="NFS">NFS</option></select></div>
+<div class="form-group"><label for="wld_vi_name">VI Name</label><input type="text" id="wld_vi_name" name="wld_vi_name" value="sfo-w01"></div>
+<div class="form-group"><label for="wld_org">Organization</label><input type="text" id="wld_org" name="wld_org" value="Rainpole"></div>
+<div class="form-group"><label for="wld_sso">SSO Domain</label><select id="wld_sso" name="wld_sso"><option value="Join Management SSO Domain">Join Management SSO Domain</option><option value="New SSO Domain">New SSO Domain</option></select></div>
+<div class="form-group"><label for="wld_cluster_name">Cluster Name</label><input type="text" id="wld_cluster_name" name="wld_cluster_name" value="sfo-w01-cl01"></div>
+<div class="form-group"><label for="wld_vc_fqdn">vCenter FQDN</label><input type="text" id="wld_vc_fqdn" name="wld_vc_fqdn" value="sfo-w01-vc01.sfo.rainpole.io"></div>
+<div class="form-group"><label for="wld_vc_ip">vCenter IP</label><input type="text" id="wld_vc_ip" name="wld_vc_ip" value="10.11.10.130"></div>
+<div class="form-group"><label for="wld_vc_subnet">vCenter Subnet Mask</label><input type="text" id="wld_vc_subnet" name="wld_vc_subnet" value="255.255.255.0"></div>
+<div class="form-group"><label for="wld_vc_gw">vCenter Default Gateway</label><input type="text" id="wld_vc_gw" name="wld_vc_gw" value="10.11.11.1"></div>
+<div class="form-group"><label for="wld_vc_root_pwd">vCenter Root Password</label><input type="password" id="wld_vc_root_pwd" name="wld_vc_root_pwd" value="VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="wld_nsx_fqdn">NSX Cluster FQDN</label><input type="text" id="wld_nsx_fqdn" name="wld_nsx_fqdn" value="sfo-w01-nsx01.sfo.rainpole.io"></div>
+<div class="form-group"><label for="wld_nsx_ip">NSX Cluster IP</label><input type="text" id="wld_nsx_ip" name="wld_nsx_ip" value="10.11.10.131"></div>
+<div class="form-group"><label for="wld_nsx_admin_pwd">NSX Admin Password</label><input type="password" id="wld_nsx_admin_pwd" name="wld_nsx_admin_pwd" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="wld_nsx_audit_pwd">NSX Audit Password</label><input type="password" id="wld_nsx_audit_pwd" name="wld_nsx_audit_pwd" value="VMw@re1!VMw@re1!" autocomplete="off"></div>
+<div class="form-group"><label for="wld_vsan_dedup">vSAN Dedup & Compression</label><select id="wld_vsan_dedup" name="wld_vsan_dedup"><option value="Configured">Configured</option><option value="Not Configured">Not Configured</option></select></div>
+<div class="form-group"><label for="wld_nfs_ds">NFS Datastore Name</label><input type="text" id="wld_nfs_ds" name="wld_nfs_ds" value="sfo-w01-cl01-ds-nfs01"></div>
+<div class="form-group"><label for="wld_nfs_share">NFS Share Path</label><input type="text" id="wld_nfs_share" name="wld_nfs_share" value="sfo-w01-cl01-ds-nfs01-share"></div>
+<div class="form-group"><label for="wld_nfs_server">NFS Server</label><input type="text" id="wld_nfs_server" name="wld_nfs_server" value="10.13.15.4"></div>
+</div>
+</div>
+</div>
+</div>
+
+
+</div>
+
+<div id="modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Modal</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="planning.js"></script>
+</body>
+</html>
