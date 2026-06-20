@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSX Network Design & Sizing Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0b0e14; --bg2: #131820; --bg3: #1a2332; --bg4: #223045;
+  --primary: #00bcd4; --primary2: #0097a7; --accent: #7c4dff;
+  --green: #00e676; --red: #ff1744; --orange: #ff9100; --gold: #ffd740;
+  --text: #e0e6ed; --text2: #8899aa; --border: #2a3a50;
+  --radius: 10px; --shadow: 0 4px 20px rgba(0,0,0,.4);
+  font-size: 14px;
+}
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Sidebar */
+.sidebar {
+  width: 240px; min-width: 240px; background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0;
+  overflow-y: auto; z-index: 100;
+}
+.sidebar-logo { padding: 20px; border-bottom: 1px solid var(--border); }
+.sidebar-logo h1 { font-size: 16px; color: var(--primary); font-weight: 700; letter-spacing: .5px; }
+.sidebar-logo span { font-size: 11px; color: var(--text2); }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 20px; cursor: pointer;
+  color: var(--text2); border-left: 3px solid transparent; transition: all .2s;
+  font-size: 13px; text-decoration: none;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { color: var(--primary); border-left-color: var(--primary); background: rgba(0,188,212,.08); }
+.nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
+.nav-item .badge { margin-left: auto; background: var(--bg4); padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+
+/* Main */
+.main { flex: 1; padding: 24px; overflow-x: hidden; max-width: calc(100vw - 240px); }
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.page-subtitle { color: var(--text2); margin-bottom: 24px; font-size: 13px; }
+
+/* Cards */
+.card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+  margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.card-title .sub { font-size: 12px; color: var(--text2); font-weight: 400; }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 1100px) { .grid-4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } }
+
+/* Form */
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 13px; outline: none; transition: border .2s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+.form-group input[type="number"] { font-family: 'Consolas', monospace; }
+.form-group .unit { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* Stat cards */
+.stat { padding: 16px; border-radius: var(--radius); background: var(--bg3); border: 1px solid var(--border); text-align: center; }
+.stat .val { font-size: 28px; font-weight: 700; font-family: 'Consolas', monospace; }
+.stat .label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.stat .val.primary { color: var(--primary); }
+.stat .val.green { color: var(--green); }
+.stat .val.gold { color: var(--gold); }
+.stat .val.red { color: var(--red); }
+.stat .val.orange { color: var(--orange); }
+.stat .val.accent { color: var(--accent); }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; background: var(--bg3); color: var(--text2); font-weight: 600; border-bottom: 2px solid var(--border); white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: rgba(0,188,212,.04); }
+tr.header td { background: var(--bg3); font-weight: 600; color: var(--primary); }
+
+/* Buttons */
+.btn {
+  padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;
+  font-weight: 600; transition: all .2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--primary); color: #000; }
+.btn-primary:hover { background: #00e5ff; transform: translateY(-1px); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #916aff; transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-sm { padding: 4px 12px; font-size: 11px; }
+
+/* Result box */
+.result-box {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-top: 12px; font-family: 'Consolas', monospace; font-size: 13px;
+  display: none;
+}
+.result-box.show { display: block; }
+.result-box .label { color: var(--text2); }
+.result-box .val { color: var(--green); font-weight: 700; float: right; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.tab { padding: 10px 20px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; font-size: 13px; transition: all .2s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Topology specific */
+.topology-container {
+  width: 100%; height: 700px; position: relative; overflow: hidden;
+  background: radial-gradient(ellipse at center, #0d1520 0%, #080b10 100%);
+  border: 1px solid var(--border); border-radius: var(--radius);
+}
+.topology-container svg { width: 100%; height: 100%; }
+.topology-controls {
+  position: absolute; bottom: 16px; right: 16px; display: flex; gap: 6px; z-index: 10;
+}
+.topology-legend {
+  position: absolute; top: 16px; left: 16px; background: rgba(11,14,20,.9);
+  border: 1px solid var(--border); border-radius: 8px; padding: 12px; z-index: 10; font-size: 11px;
+}
+.topology-legend .item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+.topology-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 1000; justify-content: center; align-items: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--primary); }
+
+/* Chart placeholder */
+.chart-box { width: 100%; height: 250px; position: relative; display: flex; align-items: flex-end; gap: 6px; padding-top: 20px; }
+.bar { flex: 1; border-radius: 4px 4px 0 0; min-height: 4px; position: relative; transition: height .6s; }
+.bar .bar-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--text2); white-space: nowrap; }
+.bar .bar-val { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text); font-family: 'Consolas',monospace; }
+
+/* Miscellaneous */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.flex { display: flex; gap: 12px; align-items: center; }
+.flex-wrap { flex-wrap: wrap; }
+.w-full { width: 100%; }
+.gap-8 { gap: 8px; }
+.hidden { display: none; }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+}
+.tag-green { background: rgba(0,230,118,.15); color: var(--green); }
+.tag-red { background: rgba(255,23,68,.15); color: var(--red); }
+.tag-blue { background: rgba(0,188,212,.15); color: var(--primary); }
+.tag-gold { background: rgba(255,215,64,.15); color: var(--gold); }
+.tag-purple { background: rgba(124,77,255,.15); color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { width: 60px; min-width: 60px; }
+  .sidebar .nav-item span { display: none; }
+  .sidebar-logo h1, .sidebar-logo span { display: none; }
+  .main { max-width: calc(100vw - 60px); padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>NSX Sizing</h1>
+    <span>Design & Cost Dashboard</span>
+  </div>
+  <div class="nav-item active" onclick="switchPage('capex',this)"><span class="icon">&#x1f4b0;</span><span>CAPEX Sizing</span></div>
+  <div class="nav-item" onclick="switchPage('opex',this)"><span class="icon">&#x26a1;</span><span>OPEX Calculator</span></div>
+  <div class="nav-item" onclick="switchPage('sow',this)"><span class="icon">&#x1f4cb;</span><span>SOW Estimator</span></div>
+  <div class="nav-item" onclick="switchPage('roi',this)"><span class="icon">&#x1f4c8;</span><span>ROI Analysis</span></div>
+  <div class="nav-item" onclick="switchPage('pmi',this)"><span class="icon">&#x1f4c5;</span><span>PMI Tracker</span></div>
+  <div class="nav-item" onclick="switchPage('topology',this)"><span class="icon">&#x1f5fa;</span><span>NSX Topology</span></div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+
+<!-- ===== CAPEX ===== -->
+<div id="page-capex" class="page active">
+  <div class="page-title">CAPEX Sizing Calculator</div>
+  <div class="page-subtitle">Tinh toan chi phi dau tu co so ha tang NSX</div>
+  <div class="grid-4 mb-16">
+    <div class="stat"><div class="val primary" id="capex-total">0</div><div class="label">Tong CAPEX (USD)</div></div>
+    <div class="stat"><div class="val green" id="capex-network">0</div><div class="label">Network HW</div></div>
+    <div class="stat"><div class="val gold" id="capex-compute">0</div><div class="label">Compute / SmartNIC</div></div>
+    <div class="stat"><div class="val accent" id="capex-other">0</div><div class="label">Other / License</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Bandwidth & MTU</div>
+      <div class="form-group"><label>So luong host ESXi</label><input type="number" id="cp-host" value="16" oninput="calcCAPEX()"><div class="unit">Host</div></div>
+      <div class="form-group"><label>So luong Edge Node</label><input type="number" id="cp-edge" value="4" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>Bandwidth moi host (Gbps)</label><input type="number" id="cp-bw" value="25" oninput="calcCAPEX()"><div class="unit">25/50/100 Gbps</div></div>
+      <div class="form-group"><label>MTU cau hinh</label><select id="cp-mtu" onchange="calcCAPEX()"><option value="1500">1500 (Standard)</option><option value="9000" selected>9000 (Jumbo Frame)</option></select></div>
+      <div class="form-group"><label>NIOC Shares (Bandwidth % phan bo)</label><input type="number" id="cp-nioc" value="40" oninput="calcCAPEX()"><div class="unit">% cho NSX traffic</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SmartNIC & Accelerator</div>
+      <div class="form-group"><label>Loai SmartNIC</label><select id="cp-snic-type" onchange="calcCAPEX()">
+        <option value="0">Khong dung SmartNIC</option>
+        <option value="1" selected>NVIDIA BlueField-2</option>
+        <option value="2">NVIDIA BlueField-3</option>
+        <option value="3">AMD Pensando</option>
+      </select></div>
+      <div class="form-group"><label>So luong SmartNIC</label><input type="number" id="cp-snic-qty" value="16" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>HBA (Fibre Channel)</label><input type="number" id="cp-hba" value="16" oninput="calcCAPEX()"><div class="unit">So luong HBA</div></div>
+      <div class="form-group"><label>HCA (InfiniBand)</label><input type="number" id="cp-hca" value="0" oninput="calcCAPEX()"><div class="unit">So luong HCA</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Network & Routing</div>
+      <div class="form-group"><label>So BGP Peer</label><input type="number" id="cp-bgp" value="4" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>So OSFP Session</label><input type="number" id="cp-osfp" value="8" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>So ToR Switch</label><input type="number" id="cp-tor" value="4" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>So Spine Switch</label><input type="number" id="cp-spine" value="2" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>Power Budget (Watt moi host)</label><input type="number" id="cp-power" value="1200" oninput="calcCAPEX()"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">License & Other</div>
+      <div class="form-group"><label>NSX License (per CPU)</label><select id="cp-license" onchange="calcCAPEX()">
+        <option value="0">NSX Standard</option>
+        <option value="1" selected>NSX Advanced</option>
+        <option value="2">NSX Professional</option>
+      </select></div>
+      <div class="form-group"><label>So CPU socket</label><input type="number" id="cp-socket" value="32" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>So VLAN ID</label><input type="number" id="cp-vlan" value="256" oninput="calcCAPEX()"></div>
+      <div class="form-group"><label>So Segment (NSX)</label><input type="number" id="cp-seg" value="128" oninput="calcCAPEX()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">CAPEX Detail</div>
+    <div class="table-wrap">
+      <table id="capex-table">
+        <thead><tr><th>Hang muc</th><th class="text-right">So luong</th><th class="text-right">Don gia (USD)</th><th class="text-right">Thanh tien</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== OPEX ===== -->
+<div id="page-opex" class="page">
+  <div class="page-title">OPEX Calculator</div>
+  <div class="page-subtitle">Chi phi van hanh he thong NSX hang nam</div>
+  <div class="grid-4 mb-16">
+    <div class="stat"><div class="val gold" id="opex-total">0</div><div class="label">Tong OPEX/nam (USD)</div></div>
+    <div class="stat"><div class="val green" id="opex-power">0</div><div class="label">Power & Cool</div></div>
+    <div class="stat"><div class="val primary" id="opex-personnel">0</div><div class="label">Nhan su</div></div>
+    <div class="stat"><div class="val red" id="opex-growth">0</div><div class="label">Tang truong</div></div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Power & Cooling</div>
+      <div class="form-group"><label>Gia dien (USD/kWh)</label><input type="number" id="op-elprice" value="0.12" step="0.01" oninput="calcOPEX()"></div>
+      <div class="form-group"><label>Tong Power (kW)</label><input type="number" id="op-power" value="48" oninput="calcOPEX()"></div>
+      <div class="form-group"><label>So gio hoat dong/nam</label><input type="number" id="op-hours" value="8760" oninput="calcOPEX()"></div>
+      <div class="form-group"><label>PUE (Power Usage Effectiveness)</label><input type="number" id="op-pue" value="1.6" step="0.1" oninput="calcOPEX()"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Nhan su Van hanh</div>
+      <div class="form-group"><label>Ky su NSX (Full-time)</label><input type="number" id="op-engineer" value="2" oninput="calcOPEX()"><div class="unit">Luong TB $40,000/nam</div></div>
+      <div class="form-group"><label>Ky su Mang (Full-time)</label><input type="number" id="op-neteng" value="2" oninput="calcOPEX()"><div class="unit">Luong TB $35,000/nam</div></div>
+      <div class="form-group"><label>Nhan vien van hanh</label><input type="number" id="op-ops" value="3" oninput="calcOPEX()"><div class="unit">Luong TB $20,000/nam</div></div>
+      <div class="form-group"><label>Dao tao / nam</label><input type="number" id="op-training" value="15000" oninput="calcOPEX()"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bao hanh & Tang truong</div>
+      <div class="form-group"><label>Bao hanh HW / nam</label><input type="number" id="op-warranty" value="25000" oninput="calcOPEX()"></div>
+      <div class="form-group"><label>Ty le tang truong (%/nam)</label><input type="number" id="op-growth-rate" value="20" oninput="calcOPEX()"></div>
+      <div class="form-group"><label>So host tang them / nam</label><input type="number" id="op-growth-host" value="4" oninput="calcOPEX()"></div>
+      <div class="form-group"><label>Chi phi trien khai ban dau</label><input type="number" id="op-deploy" value="50000" oninput="calcOPEX()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">OPEX Breakdown <span class="sub">Chi phi hang nam</span></div>
+    <div class="table-wrap"><table id="opex-table"><thead><tr><th>Hang muc</th><th class="text-right">Chi phi (USD)</th><th class="text-right">Ty le</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<!-- ===== SOW ===== -->
+<div id="page-sow" class="page">
+  <div class="page-title">SOW Estimator</div>
+  <div class="page-subtitle">Statement of Work &mdash; Giai doan, nhan su, chi phi</div>
+  <div class="grid-4 mb-16">
+    <div class="stat"><div class="val green" id="sow-total">0</div><div class="label">Tong SOW (USD)</div></div>
+    <div class="stat"><div class="val primary" id="sow-phase1">0</div><div class="label">Phase 1 - Khao sat</div></div>
+    <div class="stat"><div class="val gold" id="sow-phase2">0</div><div class="label">Phase 2 - Thiet ke</div></div>
+    <div class="stat"><div class="val accent" id="sow-phase3">0</div><div class="label">Phase 3 - Trien khai</div></div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Phase 1: Khao sat & Phan tich</div>
+      <div class="form-group"><label>So ky su khao sat</label><input type="number" id="sow-p1-eng" value="2" oninput="calcSOW()"></div>
+      <div class="form-group"><label>So ngay</label><input type="number" id="sow-p1-days" value="10" oninput="calcSOW()"></div>
+      <div class="form-group"><label>Don gia/ngay (USD)</label><input type="number" id="sow-p1-rate" value="500" oninput="calcSOW()"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Phase 2: Thiet ke & Chuan bi</div>
+      <div class="form-group"><label>So ky su thiet ke</label><input type="number" id="sow-p2-eng" value="3" oninput="calcSOW()"></div>
+      <div class="form-group"><label>So ngay</label><input type="number" id="sow-p2-days" value="15" oninput="calcSOW()"></div>
+      <div class="form-group"><label>Don gia/ngay (USD)</label><input type="number" id="sow-p2-rate" value="600" oninput="calcSOW()"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Phase 3: Trien khai & Nghiem thu</div>
+      <div class="form-group"><label>So ky su trien khai</label><input type="number" id="sow-p3-eng" value="4" oninput="calcSOW()"></div>
+      <div class="form-group"><label>So ngay</label><input type="number" id="sow-p3-days" value="30" oninput="calcSOW()"></div>
+      <div class="form-group"><label>Don gia/ngay (USD)</label><input type="number" id="sow-p3-rate" value="700" oninput="calcSOW()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">SOW Detail & Gantt</div>
+    <div class="table-wrap"><table id="sow-table"><thead><tr><th>Phase</th><th>Nhan su</th><th>So ngay</th><th class="text-right">Don gia</th><th class="text-right">Thanh tien</th></tr></thead><tbody></tbody></table></div>
+    <div class="chart-box" id="sow-chart" style="height:120px;margin-top:16px;"></div>
+  </div>
+</div>
+
+<!-- ===== ROI ===== -->
+<div id="page-roi" class="page">
+  <div class="page-title">ROI Analysis</div>
+  <div class="page-subtitle">Phan tich loi nhuan tren von dau tu</div>
+  <div class="grid-4 mb-16">
+    <div class="stat"><div class="val green" id="roi-pct">0%</div><div class="label">ROI</div></div>
+    <div class="stat"><div class="val primary" id="roi-npv">0</div><div class="label">NPV (5 nam)</div></div>
+    <div class="stat"><div class="val gold" id="roi-payback">0</div><div class="label">Payback (nam)</div></div>
+    <div class="stat"><div class="val accent" id="roi-irr">0%</div><div class="label">IRR</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Dau tu ban dau</div>
+      <div class="form-group"><label>Tong CAPEX (USD)</label><input type="number" id="roi-capex" value="350000" oninput="calcROI()"></div>
+      <div class="form-group"><label>So nam phan tich</label><input type="number" id="roi-years" value="5" oninput="calcROI()"></div>
+      <div class="form-group"><label>Ty le chiet khau (%)</label><input type="number" id="roi-discount" value="10" oninput="calcROI()"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Loi ich hang nam</div>
+      <div class="form-group"><label>Tiet kiem OPEX (USD/nam)</label><input type="number" id="roi-opex-save" value="85000" oninput="calcROI()"></div>
+      <div class="form-group"><label>Tang nang suat IT</label><input type="number" id="roi-productivity" value="45000" oninput="calcROI()"></div>
+      <div class="form-group"><label>Giam thoi gian downtime</label><input type="number" id="roi-downtime" value="30000" oninput="calcROI()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cash Flow <span class="sub">5 nam</span></div>
+    <div class="chart-box" id="roi-chart" style="height:220px;"></div>
+    <div class="table-wrap mt-16"><table id="roi-table"><thead><tr><th>Nam</th><th class="text-right">Dau tu</th><th class="text-right">Loi ich</th><th class="text-right">CF</th><th class="text-right">CF tich luy</th><th class="text-right">PV</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<!-- ===== PMI ===== -->
+<div id="page-pmi" class="page">
+  <div class="page-title">PMI Tracker</div>
+  <div class="page-subtitle">Project Management - Tien do, nhan su, tai nguyen, chi phi</div>
+  <div class="grid-4 mb-16">
+    <div class="stat"><div class="val green" id="pmi-progress">0%</div><div class="label">Tien do</div></div>
+    <div class="stat"><div class="val primary" id="pmi-cost">0</div><div class="label">Chi phi (USD)</div></div>
+    <div class="stat"><div class="val gold" id="pmi-resource">0</div><div class="label">Tai nguyen</div></div>
+    <div class="stat"><div class="val accent" id="pmi-personnel">0</div><div class="label">Nhan su</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Tien do du an</div>
+      <table id="pmi-table"><thead><tr><th>Task</th><th>Nhan su</th><th class="text-right">Tien do</th><th class="text-right">Chi phi</th><th>Han</th></tr></thead><tbody>
+        <tr><td>Khao sat hien trang</td><td><input type="number" class="pmi-res" value="2" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="100" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">100%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="8000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 1</td></tr>
+        <tr><td>Thiet kien truc</td><td><input type="number" class="pmi-res" value="3" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="80" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">80%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="15000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 2-3</td></tr>
+        <tr><td>Chuan bi ha tang</td><td><input type="number" class="pmi-res" value="4" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="60" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">60%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="25000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 3-5</td></tr>
+        <tr><td>Cai dat NSX Manager</td><td><input type="number" class="pmi-res" value="2" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="40" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">40%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="12000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 4-6</td></tr>
+        <tr><td>Cau hinh Transport Node</td><td><input type="number" class="pmi-res" value="3" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="20" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">20%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="20000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 5-8</td></tr>
+        <tr><td>Tao Segment & Gateway</td><td><input type="number" class="pmi-res" value="2" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="10" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">10%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="10000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 7-10</td></tr>
+        <tr><td>Kiem tra & Nghiem thu</td><td><input type="number" class="pmi-res" value="2" style="width:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td><input type="range" min="0" max="100" value="0" oninput="calcPMI()" style="width:80px;"><span class="pmi-pct">0%</span></td><td class="text-right"><input type="number" class="pmi-cost" value="8000" style="width:90px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;"></td><td>Tuan 9-12</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-title">Bieu do Tien do</div>
+      <div class="chart-box" id="pmi-chart" style="height:220px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOPOLOGY ===== -->
+<div id="page-topology" class="page">
+  <div class="page-title">NSX Network Topology</div>
+  <div class="page-subtitle">Kien truc mang NSX overlay - Day du thong so thiet ke</div>
+
+  <div class="grid-3 mb-16">
+    <div class="card" style="padding:12px;">
+      <div class="card-title" style="font-size:13px;margin-bottom:8px;">Thong so Segments</div>
+      <div class="flex flex-wrap gap-8" id="topo-seg-list">
+        <span class="tag tag-blue">WEB: 10.10.1.0/24</span>
+        <span class="tag tag-green">APP: 10.10.2.0/24</span>
+        <span class="tag tag-gold">DB: 10.10.3.0/24</span>
+        <span class="tag tag-purple">MGMT: 10.10.10.0/24</span>
+        <span class="tag tag-blue">DMZ: 192.168.1.0/24</span>
+        <span class="tag tag-green">VLAN 100: 172.16.1.0/24</span>
+      </div>
+    </div>
+    <div class="card" style="padding:12px;">
+      <div class="card-title" style="font-size:13px;margin-bottom:8px;">Gateway Info</div>
+      <div id="topo-gw-info">
+        <span class="tag tag-purple">T0-GW: 10.0.0.1</span>
+        <span class="tag tag-blue">T1-Web-GW: 10.10.1.1</span>
+        <span class="tag tag-green">T1-App-GW: 10.10.2.1</span>
+        <span class="tag tag-gold">T1-DB-GW: 10.10.3.1</span>
+      </div>
+    </div>
+    <div class="card" style="padding:12px;">
+      <div class="card-title" style="font-size:13px;margin-bottom:8px;">Controls</div>
+      <div class="flex gap-8">
+        <button class="btn btn-primary btn-sm" onclick="zoomTopo(1.2)">+ Phong to</button>
+        <button class="btn btn-outline btn-sm" onclick="zoomTopo(0.8)">- Thu nho</button>
+        <button class="btn btn-outline btn-sm" onclick="zoomTopo(0)">Reset</button>
+        <button class="btn btn-outline btn-sm" onclick="panTopo('left')">&larr;</button>
+        <button class="btn btn-outline btn-sm" onclick="panTopo('right')">&rarr;</button>
+        <button class="btn btn-outline btn-sm" onclick="panTopo('up')">&uarr;</button>
+        <button class="btn btn-outline btn-sm" onclick="panTopo('down')">&darr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="topology-container" id="topo-container">
+    <div class="topology-legend">
+      <div class="item"><span class="dot" style="background:var(--primary)"></span>Tier-0 Gateway</div>
+      <div class="item"><span class="dot" style="background:var(--accent)"></span>Tier-1 Gateway</div>
+      <div class="item"><span class="dot" style="background:var(--green)"></span>Segment / Workload</div>
+      <div class="item"><span class="dot" style="background:var(--orange)"></span>Edge Node</div>
+      <div class="item"><span class="dot" style="background:var(--gold)"></span>ESXi Host</div>
+    </div>
+    <svg id="topo-svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--border)"/></marker>
+        <marker id="arrow-p" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--primary)"/></marker>
+        <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0d1520"/><stop offset="100%" stop-color="#080b10"/></linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="1200" height="700" fill="url(#bg-grad)"/>
+
+      <!-- Links BGP / OSFP -->
+      <g id="topo-links">
+        <!-- External to T0 -->
+        <line x1="100" y1="100" x2="250" y2="160" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="100" y1="140" x2="250" y2="180" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow)"/>
+        <!-- T0 to Edge -->
+        <line x1="350" y1="180" x2="450" y2="250" stroke="var(--primary)" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow-p)"/>
+        <line x1="350" y1="220" x2="450" y2="290" stroke="var(--primary)" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow-p)"/>
+        <!-- Edge to Hosts -->
+        <line x1="550" y1="260" x2="650" y2="340" stroke="var(--text2)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="550" y1="300" x2="650" y2="380" stroke="var(--text2)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="550" y1="340" x2="650" y2="420" stroke="var(--text2)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- T1 to Segments -->
+        <line x1="800" y1="350" x2="920" y2="240" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <line x1="800" y1="370" x2="920" y2="320" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <line x1="800" y1="390" x2="920" y2="400" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <line x1="800" y1="410" x2="920" y2="480" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,2"/>
+      </g>
+
+      <!-- External -->
+      <g transform="translate(50,80)" class="topo-node" data-type="external">
+        <rect x="0" y="0" width="80" height="60" rx="8" fill="var(--bg3)" stroke="var(--red)" stroke-width="2"/>
+        <text x="40" y="25" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="700">INTERNET</text>
+        <text x="40" y="42" text-anchor="middle" fill="var(--text2)" font-size="9">BGP Peer AS 65001</text>
+        <text x="40" y="54" text-anchor="middle" fill="var(--text2)" font-size="8">OSPF Area 0</text>
+      </g>
+
+      <!-- T0 Gateway -->
+      <g transform="translate(230,140)" class="topo-node" data-type="t0">
+        <rect x="0" y="0" width="140" height="70" rx="10" fill="rgba(0,188,212,.12)" stroke="var(--primary)" stroke-width="2" filter="url(#glow)"/>
+        <rect x="0" y="0" width="140" height="26" rx="10" fill="var(--primary)" opacity="0.2"/>
+        <text x="70" y="18" text-anchor="middle" fill="var(--primary)" font-size="12" font-weight="700">TIER-0 GATEWAY</text>
+        <text x="70" y="36" text-anchor="middle" fill="var(--text)" font-size="10">IP: 10.0.0.1/24</text>
+        <text x="70" y="50" text-anchor="middle" fill="var(--text2)" font-size="9">MAC: 00:50:56:aa:bb:01</text>
+        <text x="70" y="63" text-anchor="middle" fill="var(--text2)" font-size="9">vLAN 10 | SR-T0</text>
+      </g>
+
+      <!-- Edge Nodes -->
+      <g transform="translate(430,230)" class="topo-node" data-type="edge">
+        <rect x="0" y="0" width="130" height="54" rx="8" fill="rgba(255,145,0,.1)" stroke="var(--orange)" stroke-width="2"/>
+        <rect x="0" y="0" width="130" height="22" rx="8" fill="var(--orange)" opacity="0.15"/>
+        <text x="65" y="15" text-anchor="middle" fill="var(--orange)" font-size="11" font-weight="700">EDGE CLUSTER</text>
+        <text x="65" y="32" text-anchor="middle" fill="var(--text)" font-size="9">Edge-01: 10.0.10.1/24</text>
+        <text x="65" y="46" text-anchor="middle" fill="var(--text2)" font-size="9">Edge-02: 10.0.10.2/24</text>
+      </g>
+
+      <!-- T1 Gateways -->
+      <g transform="translate(670,210)" class="topo-node" data-type="t1">
+        <rect x="0" y="0" width="120" height="46" rx="8" fill="rgba(124,77,255,.12)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="60" y="16" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="700">T1-WEB</text>
+        <text x="60" y="31" text-anchor="middle" fill="var(--text)" font-size="9">10.10.1.1/24</text>
+        <text x="60" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 100 | SR-WEB</text>
+      </g>
+      <g transform="translate(670,290)" class="topo-node" data-type="t1">
+        <rect x="0" y="0" width="120" height="46" rx="8" fill="rgba(124,77,255,.12)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="60" y="16" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="700">T1-APP</text>
+        <text x="60" y="31" text-anchor="middle" fill="var(--text)" font-size="9">10.10.2.1/24</text>
+        <text x="60" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 200 | SR-APP</text>
+      </g>
+      <g transform="translate(670,370)" class="topo-node" data-type="t1">
+        <rect x="0" y="0" width="120" height="46" rx="8" fill="rgba(124,77,255,.12)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="60" y="16" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="700">T1-DB</text>
+        <text x="60" y="31" text-anchor="middle" fill="var(--text)" font-size="9">10.10.3.1/24</text>
+        <text x="60" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 300 | SR-DB</text>
+      </g>
+
+      <!-- ESXi Hosts -->
+      <g transform="translate(610,440)" class="topo-node" data-type="host">
+        <rect x="0" y="0" width="180" height="42" rx="6" fill="rgba(255,215,64,.08)" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="40" y="16" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="600">ESXi-01</text>
+        <text x="40" y="32" text-anchor="middle" fill="var(--text2)" font-size="8">10.0.20.1/24</text>
+        <text x="130" y="16" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="600">ESXi-02</text>
+        <text x="130" y="32" text-anchor="middle" fill="var(--text2)" font-size="8">10.0.20.2/24</text>
+      </g>
+      <g transform="translate(610,490)" class="topo-node" data-type="host">
+        <rect x="0" y="0" width="180" height="42" rx="6" fill="rgba(255,215,64,.08)" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="40" y="16" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="600">ESXi-03</text>
+        <text x="40" y="32" text-anchor="middle" fill="var(--text2)" font-size="8">10.0.20.3/24</text>
+        <text x="130" y="16" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="600">ESXi-04</text>
+        <text x="130" y="32" text-anchor="middle" fill="var(--text2)" font-size="8">10.0.20.4/24</text>
+      </g>
+
+      <!-- Segments with detail -->
+      <g transform="translate(870,210)" class="topo-node" data-type="segment">
+        <rect x="0" y="0" width="170" height="68" rx="8" fill="rgba(0,230,118,.08)" stroke="var(--green)" stroke-width="1.5"/>
+        <rect x="0" y="0" width="170" height="20" rx="8" fill="var(--green)" opacity="0.1"/>
+        <text x="85" y="14" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="600">SEG-WEB</text>
+        <text x="85" y="30" text-anchor="middle" fill="var(--text)" font-size="9">10.10.1.0/24 | GW: .1</text>
+        <text x="85" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 100 | BD: WEB-BD</text>
+        <text x="85" y="54" text-anchor="middle" fill="var(--text2)" font-size="8">MAC: 00:50:56:aa:01:xx</text>
+        <text x="85" y="65" text-anchor="middle" fill="var(--text2)" font-size="8">Subnet: 255.255.255.0</text>
+      </g>
+      <g transform="translate(870,295)" class="topo-node" data-type="segment">
+        <rect x="0" y="0" width="170" height="68" rx="8" fill="rgba(0,230,118,.08)" stroke="var(--green)" stroke-width="1.5"/>
+        <rect x="0" y="0" width="170" height="20" rx="8" fill="var(--green)" opacity="0.1"/>
+        <text x="85" y="14" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="600">SEG-APP</text>
+        <text x="85" y="30" text-anchor="middle" fill="var(--text)" font-size="9">10.10.2.0/24 | GW: .1</text>
+        <text x="85" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 200 | BD: APP-BD</text>
+        <text x="85" y="54" text-anchor="middle" fill="var(--text2)" font-size="8">MAC: 00:50:56:aa:02:xx</text>
+        <text x="85" y="65" text-anchor="middle" fill="var(--text2)" font-size="8">Subnet: 255.255.255.0</text>
+      </g>
+      <g transform="translate(870,380)" class="topo-node" data-type="segment">
+        <rect x="0" y="0" width="170" height="68" rx="8" fill="rgba(0,230,118,.08)" stroke="var(--green)" stroke-width="1.5"/>
+        <rect x="0" y="0" width="170" height="20" rx="8" fill="var(--green)" opacity="0.1"/>
+        <text x="85" y="14" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="600">SEG-DB</text>
+        <text x="85" y="30" text-anchor="middle" fill="var(--text)" font-size="9">10.10.3.0/24 | GW: .1</text>
+        <text x="85" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 300 | BD: DB-BD</text>
+        <text x="85" y="54" text-anchor="middle" fill="var(--text2)" font-size="8">MAC: 00:50:56:aa:03:xx</text>
+        <text x="85" y="65" text-anchor="middle" fill="var(--text2)" font-size="8">Subnet: 255.255.255.0</text>
+      </g>
+      <g transform="translate(870,465)" class="topo-node" data-type="segment">
+        <rect x="0" y="0" width="170" height="68" rx="8" fill="rgba(0,188,212,.08)" stroke="var(--primary)" stroke-width="1.5"/>
+        <rect x="0" y="0" width="170" height="20" rx="8" fill="var(--primary)" opacity="0.1"/>
+        <text x="85" y="14" text-anchor="middle" fill="var(--primary)" font-size="10" font-weight="600">SEG-MGMT</text>
+        <text x="85" y="30" text-anchor="middle" fill="var(--text)" font-size="9">10.10.10.0/24 | GW: .1</text>
+        <text x="85" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">vLAN 999 | BD: MGMT-BD</text>
+        <text x="85" y="54" text-anchor="middle" fill="var(--text2)" font-size="8">MAC: 00:50:56:aa:10:xx</text>
+        <text x="85" y="65" text-anchor="middle" fill="var(--text2)" font-size="8">Subnet: 255.255.255.0</text>
+      </g>
+
+      <!-- NSX Manager -->
+      <g transform="translate(230,400)" class="topo-node" data-type="mgmt">
+        <rect x="0" y="0" width="130" height="46" rx="8" fill="rgba(0,230,118,.08)" stroke="var(--green)" stroke-width="1.5"/>
+        <text x="65" y="16" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="700">NSX MANAGER</text>
+        <text x="65" y="31" text-anchor="middle" fill="var(--text)" font-size="9">10.10.10.10/24</text>
+        <text x="65" y="42" text-anchor="middle" fill="var(--text2)" font-size="8">Cluster VIP: 10.10.10.9</text>
+      </g>
+
+      <!-- Overlay labels -->
+      <text x="600" y="130" text-anchor="middle" fill="var(--text2)" font-size="11" opacity="0.6">NSX Overlay Transport Zone | GENEVE | MTU 9000</text>
+      <text x="600" y="580" text-anchor="middle" fill="var(--text2)" font-size="10" opacity="0.5">vSphere Distributed Switch (VDS) | NIOC Shares: 40% | BGP ECMP | Multi-path</text>
+    </svg>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ===== Navigation =====
+function switchPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'topology') setTimeout(() => { initTopoDrag(); }, 100);
+}
+
+// ===== CAPEX Calculator =====
+function calcCAPEX() {
+  const host = +document.getElementById('cp-host').value || 0;
+  const edge = +document.getElementById('cp-edge').value || 0;
+  const bw = +document.getElementById('cp-bw').value || 0;
+  const mtu = document.getElementById('cp-mtu').value;
+  const nioc = +document.getElementById('cp-nioc').value || 0;
+  const snicType = +document.getElementById('cp-snic-type').value;
+  const snicQty = +document.getElementById('cp-snic-qty').value || 0;
+  const hba = +document.getElementById('cp-hba').value || 0;
+  const hca = +document.getElementById('cp-hca').value || 0;
+  const bgp = +document.getElementById('cp-bgp').value || 0;
+  const osfp = +document.getElementById('cp-osfp').value || 0;
+  const tor = +document.getElementById('cp-tor').value || 0;
+  const spine = +document.getElementById('cp-spine').value || 0;
+  const power = +document.getElementById('cp-power').value || 0;
+  const lic = +document.getElementById('cp-license').value;
+  const socket = +document.getElementById('cp-socket').value || 0;
+  const vlan = +document.getElementById('cp-vlan').value || 0;
+  const seg = +document.getElementById('cp-seg').value || 0;
+
+  // Pricing assumptions
+  const nicPrice = bw <= 10 ? 200 : bw <= 25 ? 400 : bw <= 50 ? 800 : 1500;
+  const snicPrices = [0, 1200, 2500, 1800];
+  const snicPrice = snicPrices[snicType] || 0;
+  const hbaPrice = 600;
+  const hcaPrice = 1500;
+  const torPrice = 15000;
+  const spinePrice = 35000;
+  const mtuPremium = mtu === '9000' ? 0.05 : 0;
+  const licPrices = [2000, 5000, 8000];
+
+  let items = [];
+  let total = 0;
+
+  // NICs
+  const nicsPerHost = 2;
+  const totalNics = host * nicsPerHost;
+  const nicCost = totalNics * nicPrice * (1 + mtuPremium);
+  items.push(['NICs ('+bw+'G) x'+totalNics, totalNics, nicPrice, Math.round(nicCost)]);
+  total += nicCost;
+
+  // Edge
+  const edgeCost = edge * 25000;
+  items.push(['Edge Node x'+edge, edge, 25000, edgeCost]);
+  total += edgeCost;
+
+  // SmartNIC
+  if (snicType > 0 && snicQty > 0) {
+    const snicCost = snicQty * snicPrice;
+    const snicName = ['','BlueField-2','BlueField-3','Pensando'][snicType];
+    items.push(['SmartNIC '+snicName+' x'+snicQty, snicQty, snicPrice, snicCost]);
+    total += snicCost;
+  }
+
+  // HBA
+  if (hba > 0) {
+    const hbaCost = hba * hbaPrice;
+    items.push(['HBA FC x'+hba, hba, hbaPrice, hbaCost]);
+    total += hbaCost;
+  }
+
+  // HCA
+  if (hca > 0) {
+    const hcaCost = hca * hcaPrice;
+    items.push(['HCA InfiniBand x'+hca, hca, hcaPrice, hcaCost]);
+    total += hcaCost;
+  }
+
+  // Switches
+  const torCost = tor * torPrice;
+  items.push(['ToR Switch x'+tor, tor, torPrice, torCost]);
+  total += torCost;
+
+  const spineCost = spine * spinePrice;
+  items.push(['Spine Switch x'+spine, spine, spinePrice, spineCost]);
+  total += spineCost;
+
+  // License
+  const licCost = socket * licPrices[lic];
+  const licName = ['Standard','Advanced','Professional'][lic];
+  items.push(['NSX License '+licName+' x'+socket, socket, licPrices[lic], licCost]);
+  total += licCost;
+
+  // Power (simple UPS/PDU)
+  const powerCost = Math.round(host * power * 2.5);
+  items.push(['Power Infra (UPS/PDU)', host, Math.round(power*2.5), powerCost]);
+  total += powerCost;
+
+  // BGP/OSFP config cost
+  const routingCost = (bgp + osfp) * 500;
+  items.push(['BGP/OSPF Config ('+(bgp+osfp)+' sessions)', bgp+osfp, 500, routingCost]);
+  total += routingCost;
+
+  // VLAN/Segment
+  const segCost = Math.round((vlan + seg) * 25);
+  items.push(['VLAN/Segment Design ('+(vlan+seg)+')', vlan+seg, 25, segCost]);
+  total += segCost;
+
+  // Fill table
+  const tbody = document.querySelector('#capex-table tbody');
+  tbody.innerHTML = items.map(r => '<tr><td>'+r[0]+'</td><td class="text-right">'+r[1]+'</td><td class="text-right">'+r[2].toLocaleString()+'</td><td class="text-right">'+r[3].toLocaleString()+'</td></tr>').join('');
+  tbody.innerHTML += '<tr class="header"><td><strong>TONG CAPEX</strong></td><td></td><td></td><td class="text-right"><strong>'+total.toLocaleString()+'</strong></td></tr>';
+
+  document.getElementById('capex-total').textContent = total.toLocaleString();
+  document.getElementById('capex-network').textContent = (torCost+spineCost+edgeCost+nicCost).toLocaleString();
+  document.getElementById('capex-compute').textContent = (snicType>0?snicQty*snicPrice:0)+(hba*hbaPrice)+(hca*hcaPrice);
+  document.getElementById('capex-other').textContent = (licCost+powerCost+routingCost+segCost).toLocaleString();
+}
+
+// ===== OPEX Calculator =====
+function calcOPEX() {
+  const elPrice = +document.getElementById('op-elprice').value || 0;
+  const power = +document.getElementById('op-power').value || 0;
+  const hours = +document.getElementById('op-hours').value || 0;
+  const pue = +document.getElementById('op-pue').value || 0;
+  const eng = +document.getElementById('op-engineer').value || 0;
+  const neteng = +document.getElementById('op-neteng').value || 0;
+  const ops = +document.getElementById('op-ops').value || 0;
+  const training = +document.getElementById('op-training').value || 0;
+  const warranty = +document.getElementById('op-warranty').value || 0;
+  const growthRate = +document.getElementById('op-growth-rate').value || 0;
+  const growthHost = +document.getElementById('op-growth-host').value || 0;
+  const deploy = +document.getElementById('op-deploy').value || 0;
+
+  const powerCost = Math.round(power * hours * elPrice * pue);
+  const personnelCost = (eng * 40000) + (neteng * 35000) + (ops * 20000);
+  const growthCost = Math.round((growthHost * 8000) * (1 + growthRate/100));
+  const total = powerCost + personnelCost + training + warranty + growthCost + deploy;
+
+  const breakdown = [
+    ['Power & Cooling', powerCost],
+    ['Nhan su (Engineer/Ops)', personnelCost],
+    ['Dao tao', training],
+    ['Bao hanh HW', warranty],
+    ['Tang truong Scale', growthCost],
+    ['Trien khai ban dau', deploy],
+  ];
+  const totalRounded = breakdown.reduce((s,r)=>s+r[1],0);
+  const tbody = document.querySelector('#opex-table tbody');
+  tbody.innerHTML = breakdown.map(r => {
+    const pct = totalRounded > 0 ? (r[1]/totalRounded*100).toFixed(1) : 0;
+    return '<tr><td>'+r[0]+'</td><td class="text-right">'+r[1].toLocaleString()+'</td><td class="text-right">'+pct+'%</td></tr>';
+  }).join('');
+  tbody.innerHTML += '<tr class="header"><td><strong>Tong OPEX/nam</strong></td><td class="text-right"><strong>'+totalRounded.toLocaleString()+'</strong></td><td class="text-right">100%</td></tr>';
+
+  document.getElementById('opex-total').textContent = totalRounded.toLocaleString();
+  document.getElementById('opex-power').textContent = powerCost.toLocaleString();
+  document.getElementById('opex-personnel').textContent = personnelCost.toLocaleString();
+  document.getElementById('opex-growth').textContent = growthCost.toLocaleString();
+}
+
+// ===== SOW Calculator =====
+function calcSOW() {
+  const phases = [];
+  for (let i = 1; i <= 3; i++) {
+    const eng = +document.getElementById('sow-p'+i+'-eng').value || 0;
+    const days = +document.getElementById('sow-p'+i+'-days').value || 0;
+    const rate = +document.getElementById('sow-p'+i+'-rate').value || 0;
+    phases.push({ eng, days, rate, total: eng * days * rate });
+  }
+  const names = ['Phase 1: Khao sat & Phan tich','Phase 2: Thiet ke & Chuan bi','Phase 3: Trien khai & Nghiem thu'];
+  const totals = phases.map(p => p.total);
+  const grandTotal = totals.reduce((a,b)=>a+b, 0);
+
+  const tbody = document.querySelector('#sow-table tbody');
+  tbody.innerHTML = phases.map((p,i) => {
+    return '<tr><td>'+names[i]+'</td><td>'+p.eng+'</td><td>'+p.days+'</td><td class="text-right">'+p.rate.toLocaleString()+'</td><td class="text-right">'+p.total.toLocaleString()+'</td></tr>';
+  }).join('');
+  tbody.innerHTML += '<tr class="header"><td><strong>Tong SOW</strong></td><td></td><td></td><td></td><td class="text-right"><strong>'+grandTotal.toLocaleString()+'</strong></td></tr>';
+
+  document.getElementById('sow-total').textContent = grandTotal.toLocaleString();
+  document.getElementById('sow-phase1').textContent = totals[0].toLocaleString();
+  document.getElementById('sow-phase2').textContent = totals[1].toLocaleString();
+  document.getElementById('sow-phase3').textContent = totals[2].toLocaleString();
+
+  // Chart
+  const chart = document.getElementById('sow-chart');
+  const max = Math.max(...totals, 1);
+  chart.innerHTML = totals.map((v,i) => {
+    const h = Math.max(4, (v/max)*100);
+    const colors = ['var(--primary)','var(--gold)','var(--green)'];
+    return '<div class="bar" style="height:'+h+'px;background:'+colors[i]+'"><div class="bar-val">'+v.toLocaleString()+'</div><div class="bar-label">P'+(i+1)+'</div></div>';
+  }).join('');
+}
+
+// ===== ROI Calculator =====
+function calcROI() {
+  const capex = +document.getElementById('roi-capex').value || 0;
+  const years = +document.getElementById('roi-years').value || 1;
+  const discount = (+document.getElementById('roi-discount').value || 0) / 100;
+  const opexSave = +document.getElementById('roi-opex-save').value || 0;
+  const productivity = +document.getElementById('roi-productivity').value || 0;
+  const downtime = +document.getElementById('roi-downtime').value || 0;
+
+  const annualBenefit = opexSave + productivity + downtime;
+  let cumCF = -capex;
+  let npv = -capex;
+  const rows = [];
+  const cashFlows = [];
+
+  for (let y = 1; y <= years; y++) {
+    const cf = annualBenefit;
+    cumCF += cf;
+    const pv = cf / Math.pow(1 + discount, y);
+    npv += pv;
+    cashFlows.push(cumCF);
+    rows.push({
+      year: y, invest: y===1?-capex:0, benefit: cf, cf: cumCF, cum: cumCF, pv: Math.round(pv)
+    });
+  }
+
+  const roi = capex > 0 ? ((annualBenefit * years - capex) / capex * 100) : 0;
+  let payback = -1;
+  let temp = -capex;
+  for (let y = 1; y <= years; y++) {
+    temp += annualBenefit;
+    if (temp >= 0 && payback < 0) payback = y + (temp - annualBenefit) / annualBenefit;
+  }
+
+  // IRR approximation
+  let irr = 0;
+  const guessIrr = (c, arr) => {
+    for (let r = 0; r <= 100; r += 0.1) {
+      let npv2 = -c;
+      for (let y = 1; y <= years; y++) npv2 += annualBenefit / Math.pow(1 + r/100, y);
+      if (Math.abs(npv2) < c * 0.01) return r;
+    }
+    return 0;
+  };
+  irr = guessIrr(capex, []);
+
+  document.getElementById('roi-pct').textContent = roi.toFixed(1)+'%';
+  document.getElementById('roi-npv').textContent = Math.round(npv).toLocaleString();
+  document.getElementById('roi-payback').textContent = payback > 0 ? payback.toFixed(1) : 'N/A';
+  document.getElementById('roi-irr').textContent = irr.toFixed(1)+'%';
+
+  // Table
+  const tbody = document.querySelector('#roi-table tbody');
+  tbody.innerHTML = '<tr><td>Nam 0</td><td class="text-right">'+capex.toLocaleString()+'</td><td class="text-right">0</td><td class="text-right">-'+capex.toLocaleString()+'</td><td class="text-right">-'+capex.toLocaleString()+'</td><td class="text-right">-'+capex.toLocaleString()+'</td></tr>';
+  tbody.innerHTML += rows.map(r => {
+    return '<tr><td>Nam '+r.year+'</td><td class="text-right">'+r.invest.toLocaleString()+'</td><td class="text-right">'+r.benefit.toLocaleString()+'</td><td class="text-right">'+(r.cf >= 0 ? '' : '-')+Math.abs(r.cf).toLocaleString()+'</td><td class="text-right">'+(r.cum >= 0 ? '' : '-')+Math.abs(r.cum).toLocaleString()+'</td><td class="text-right">'+r.pv.toLocaleString()+'</td></tr>';
+  }).join('');
+
+  // Chart
+  const chart = document.getElementById('roi-chart');
+  const allCF = [-capex, ...cashFlows];
+  const maxAbs = Math.max(...allCF.map(v => Math.abs(v)), 1);
+  chart.innerHTML = allCF.map((v,i) => {
+    const h = Math.max(3, Math.abs(v)/maxAbs * 180);
+    const color = v >= 0 ? 'var(--green)' : 'var(--red)';
+    return '<div class="bar" style="height:'+h+'px;background:'+color+';margin-top:'+(v>=0?180-h:180)+'px"><div class="bar-val">'+v.toLocaleString()+'</div><div class="bar-label">Y'+(i)+'</div></div>';
+  }).join('');
+}
+
+// ===== PMI Calculator =====
+function calcPMI() {
+  const rows = document.querySelectorAll('#pmi-table tbody tr');
+  let totalProgress = 0, totalCost = 0, totalRes = 0, count = 0;
+  rows.forEach(tr => {
+    const pctEl = tr.querySelector('.pmi-pct');
+    const range = tr.querySelector('input[type="range"]');
+    const costEl = tr.querySelector('.pmi-cost');
+    const resEl = tr.querySelector('.pmi-res');
+    if (range && pctEl && costEl && resEl) {
+      pctEl.textContent = range.value + '%';
+      totalProgress += +range.value;
+      totalCost += +costEl.value;
+      totalRes += +resEl.value;
+      count++;
+    }
+  });
+
+  const avgProgress = count > 0 ? Math.round(totalProgress / count) : 0;
+  document.getElementById('pmi-progress').textContent = avgProgress + '%';
+  document.getElementById('pmi-cost').textContent = totalCost.toLocaleString();
+  document.getElementById('pmi-resource').textContent = totalRes;
+  document.getElementById('pmi-personnel').textContent = Math.round(totalRes / count);
+
+  // Chart
+  const chart = document.getElementById('pmi-chart');
+  const taskNames = ['Khao sat','Thiet ke','Ha tang','NSX Mgr','T-Node','Seg/GW','Nghiem thu'];
+  chart.innerHTML = rows.map((tr,i) => {
+    const range = tr.querySelector('input[type="range"]');
+    const v = range ? +range.value : 0;
+    return '<div class="bar" style="height:'+v+'px;background:var(--primary);opacity:0.7"><div class="bar-val">'+v+'%</div><div class="bar-label" style="font-size:8px">'+taskNames[i]+'</div></div>';
+  }).join('');
+}
+
+// ===== Topology Zoom =====
+let topoScale = 1;
+let topoPanX = 0, topoPanY = 0;
+
+function zoomTopo(factor) {
+  const svg = document.getElementById('topo-svg');
+  if (factor === 0) { topoScale = 1; topoPanX = 0; topoPanY = 0; }
+  else topoScale *= factor;
+  topoScale = Math.max(0.3, Math.min(3, topoScale));
+  applyTopoTransform(svg);
+}
+
+function panTopo(dir) {
+  const step = 30;
+  if (dir === 'left') topoPanX += step;
+  if (dir === 'right') topoPanX -= step;
+  if (dir === 'up') topoPanY += step;
+  if (dir === 'down') topoPanY -= step;
+  applyTopoTransform(document.getElementById('topo-svg'));
+}
+
+function applyTopoTransform(svg) {
+  const w = 1200, h = 700;
+  svg.setAttribute('viewBox', (topoPanX) + ' ' + (topoPanY) + ' ' + (w/topoScale) + ' ' + (h/topoScale));
+}
+
+// ===== Topology Drag =====
+function initTopoDrag() {
+  const container = document.getElementById('topo-container');
+  let isDown = false, startX, startY, startVX, startVY;
+
+  const onStart = (e) => {
+    isDown = true;
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    startVX = topoPanX; startVY = topoPanY;
+    container.style.cursor = 'grabbing';
+  };
+  const onMove = (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const pt = e.touches ? e.touches[0] : e;
+    const dx = pt.clientX - startX;
+    const dy = pt.clientY - startY;
+    const svg = document.getElementById('topo-svg');
+    const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+    const scaleX = vb[2] / container.clientWidth;
+    topoPanX = startVX - dx * scaleX * 0.5;
+    topoPanY = startVY - dy * scaleX * 0.5;
+    applyTopoTransform(svg);
+  };
+  const onEnd = () => { isDown = false; container.style.cursor = 'grab'; };
+
+  container.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+  container.addEventListener('touchstart', onStart, {passive:true});
+  container.addEventListener('touchmove', onMove, {passive:false});
+  container.addEventListener('touchend', onEnd);
+
+  // Wheel zoom
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    zoomTopo(factor);
+  }, {passive:false});
+
+  container.style.cursor = 'grab';
+}
+
+// ===== Initialize everything =====
+calcCAPEX();
+calcOPEX();
+calcSOW();
+calcROI();
+calcPMI();
+</script>
+
+</body>
+</html>
