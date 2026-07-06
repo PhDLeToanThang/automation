@@ -34,7 +34,7 @@ Backup Software (Veeam/NBU/Bacula/TSM)
        |--- iSCSI / FC / SCSI Passthrough
        v
 +======================+
-|    VTL Middleware     |  <-- Kernel Module (pseudo HBA) + User-space daemons
+|    VTL Middleware    |  <-- Kernel Module (pseudo HBA) + User-space daemons
 +======================+
        |
        v
@@ -109,17 +109,17 @@ Backup Software (Veeam/NBU/Bacula/TSM)
 
 ```
 +----------------------------------------------------+
-|                   mhVTL System                       |
-|                                                      |
-|  Kernel Space:                                       |
-|    mhvtl.ko (pseudo HBA - dựa trên scsi_debug)      |
-|       + char device backend                          |
-|                                                      |
-|  User Space:                                         |
-|    vtltape           - SSC target daemon (tape)      |
-|    vtllibrary        - SMC target daemon (library)   |
-|    vtlcmd            - administration utility        |
-|    mktape            - create virtual tapes          |
+|                   mhVTL System                     |
+|                                                    |
+|  Kernel Space:                                     |
+|    mhvtl.ko (pseudo HBA - dựa trên scsi_debug)     |
+|       + char device backend                        |
+|                                                    |
+|  User Space:                                       |
+|    vtltape           - SSC target daemon (tape)    |
+|    vtllibrary        - SMC target daemon (library) |
+|    vtlcmd            - administration utility      |
+|    mktape            - create virtual tapes        |
 +----------------------------------------------------+
 ```
 
@@ -251,13 +251,13 @@ Backup Software (Veeam, NetBackup, Bacula...)
                  | UNIX socket (CDB frames)
                  v
 +------ Holo Data Plane (Rust) --------+
-|  + SCSI Tape State Machine            |
-|  + CDB Dispatch (48 opcodes)          |
-|  + Segment Storage Engine             |
-|  + Dedup / LZ4 / Zlib Compression     |
-|  + WORM Enforcement                   |
-|  + Zero unsafe code                   |
-+----------------------------------------+
+|  + SCSI Tape State Machine           |
+|  + CDB Dispatch (48 opcodes)         |
+|  + Segment Storage Engine            |
+|  + Dedup / LZ4 / Zlib Compression    |
+|  + WORM Enforcement                  |
+|  + Zero unsafe code                  |
++--------------------------------------+
 ```
 
 ### Hệ điều hành hỗ trợ:
@@ -389,29 +389,29 @@ Ví dụ:
 
 ```
 +=====================================================+
-|                  HYPERVISOR (VMware/Proxmox)         |
+|                  HYPERVISOR (VMware/Proxmox)        |
 +=====================================================+
-         |              |              |
+         |             |             |
     +----+----+   +----+----+   +----+----+
     | VTL VM1 |   | VTL VM2 |   | VTL VM3 |
     |---------|   |---------|   |---------|
     | 8 vCPU  |   | 4 vCPU  |   | 4 vCPU  |
     | 16 GB   |   | 8 GB    |   | 8 GB    |
     |---------|   |---------|   |---------|
-    | VD1: 1TB |   | VD6: 1TB |   | VD11: 1TB |  <- Mỗi VD = 1 Tape ảo
-    | VD2: 1TB |   | VD7: 1TB |   | VD12: 1TB |
-    | VD3: 1TB |   | VD8: 1TB |   | VD13: 1TB |
-    | VD4: 1TB |   | VD9: 1TB |   | VD14: 1TB |
-    | VD5: 1TB |   | VD10: 1TB|   | VD15: 1TB |
-    +----------+   +----------+   +----------+
-         |              |              |
-    =====+==============+==============+=====  (iSCSI Network)
-         |              |              |
+    |VD1: 1TB |   |VD6: 1TB |   |VD11: 1TB|  <- Mỗi VD = 1 Tape ảo
+    |VD2: 1TB |   |VD7: 1TB |   |VD12: 1TB|
+    |VD3: 1TB |   |VD8: 1TB |   |VD13: 1TB|
+    |VD4: 1TB |   |VD9: 1TB |   |VD14: 1TB|
+    |VD5: 1TB |   |VD10: 1TB|   |VD15: 1TB|
+    +---------+   +---------+   +---------+
+         |             |             |
+    =====+=============+=============+=====  (iSCSI Network)
+         |             |             |
     +----+----+   +----+----+   +----+----+
-    |  Backup  |   |  Backup  |   |  Backup  |
-    | Server 1 |   | Server 2 |   | Server 3 |
-    | (Veeam)  |   | (Veeam)  |   | (Veeam)  |
-    +----------+   +----------+   +----------+
+    | Backup  |   | Backup  |   | Backup  |
+    |Server 1 |   |Server 2 |   |Server 3 |
+    |(Veeam)  |   |(Veeam)  |   |(Veeam)  |
+    +---------+   +---------+   +---------+
 ```
 
 ### Lưu ý khi tạo Virtual Disk:
