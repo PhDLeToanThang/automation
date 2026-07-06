@@ -9,7 +9,7 @@
 
 1. [Tổng quan về VTL](#1-tổng-quan-về-vtl)
 2. [Phân loại các giải pháp VTL](#2-phân-loại-các-giải-pháp-vtl)
-3. [Giải pháp #1: QUADStor VTL (ĐÃ CHẾT)](#3-giải-pháp-1-quadstor-vtl-đã-chết)
+3. [Giải pháp #1: QUADStor VTL (ĐÃ ĐÓNG)](#3-giải-pháp-1-quadstor-vtl-đã-đóng)
 4. [Giải pháp #2: mhVTL (KHUYẾN NGHỊ - ĐANG HOẠT ĐỘNG)](#4-giải-pháp-2-mhvtl-khuyến-nghị---đang-hoạt-động)
 5. [Giải pháp #3: Holo-VTL (MỚI NHẤT - RUST, MIT License)](#5-giải-pháp-3-holo-vtl-mới-nhất---rust-mit-license)
 6. [Giải pháp #4: StarWind VTL Free (MIỄN PHÍ NHƯNG ĐÓNG)](#6-giải-pháp-4-starwind-vtl-free-miễn-phí-nhưng-đóng)
@@ -50,20 +50,20 @@ Backup Software (Veeam/NBU/Bacula/TSM)
 
 | Giải pháp | Loại giấy phép | Trạng thái | Hỗ trợ CentOS 8 / RHEL 8 | Hỗ trợ Ubuntu 24.04 | Kernel module |
 |-----------|---------------|------------|--------------------------|---------------------|---------------|
-| QUADStor VTL | GPLv2 (Open Source) | **ĐÃ CHẾT** (EOL 2021) | KHÔNG | KHÔNG | Cần kernel module riêng |
+| QUADStor VTL | GPLv2 (Open Source) | **ĐÃ ĐÓNG** (EOL 2021) | KHÔNG | KHÔNG | Cần kernel module riêng |
 | mhVTL | GPLv2 (Open Source) | **ĐANG HOẠT ĐỘNG** | CÓ (via ELRepo) | CÓ (build từ source) | mhvtl.ko (pseudo HBA) |
 | Holo-VTL | MIT (Open Source) | **MỚI** (2026) | CÓ (RHEL 8/9/10) | CÓ (20.04/24.04/25.04) | LIO/TCMU (Linux kernel built-in) |
 | StarWind VTL Free | Proprietary (Free) | ĐANG HOẠT ĐỘNG | CÓ (qua Windows) | KHÔNG | Không cần (Windows) |
-| iSCSI_Tape | GPLv2 | **ĐÃ CHẾT** (2013) | KHÔNG | KHÔNG | Cần kernel module |
+| iSCSI_Tape | GPLv2 | **ĐÃ ĐÓNG** (2013) | KHÔNG | KHÔNG | Cần kernel module |
 
 ---
 
-## 3. GIẢI PHÁP #1: QUADStor VTL (ĐÃ CHẾT)
+## 3. GIẢI PHÁP #1: QUADStor VTL (ĐÃ ĐÓNG)
 
 ### Thông tin:
 - **Repository gốc**: https://github.com/allfs/quadstorvtl (fork từ quadstor/quadstorvtl - đã xóa)
 - **Website**: https://www.quadstor.com (trang download VTL đã bị đóng, chỉ còn documentation)
-- **Trạng thái**: **NGỪNG PHÁT TRIỂN**, dự án đã chết từ khoảng 2020-2021.
+- **Trạng thái**: **NGỪNG PHÁT TRIỂN**, dự án ĐÃ ĐÓNG từ khoảng 2020-2021.
 
 ### Các hệ điều hành hỗ trợ (theo README gốc):
 | OS | Phiên bản | Kernel hỗ trợ |
@@ -89,7 +89,7 @@ Backup Software (Veeam/NBU/Bacula/TSM)
 
 6. **Script cài đặt midacts/quadstor.sh** chỉ hỗ trợ Debian 7 (2014), không chạy được trên hệ thống hiện đại.
 
-### Kết luận: **KHÔNG THỂ SỬ DỤNG**. Không có bản RPM/Deb cho CentOS 8/RHEL 8/Ubuntu 24.04. Dự án đã chết.
+### Kết luận: **KHÔNG THỂ SỬ DỤNG**. Không có bản RPM/Deb cho CentOS 8/RHEL 8/Ubuntu 24.04. Dự án ĐÃ ĐÓNG.
 
 ---
 
@@ -324,7 +324,7 @@ curl -fsSL https://raw.githubusercontent.com/Holo-VTL/Holo/main/scripts/install.
 
 ### Thông tin:
 - **SourceForge**: https://sourceforge.net/projects/iscsi-tape/
-- **Trạng thái**: **ĐÃ CHẾT** - Last update 2013
+- **Trạng thái**: **ĐÃ ĐÓNG** - Last update 2013
 - **Giấy phép**: GPL v2
 
 ### Lý do không hoạt động:
@@ -486,7 +486,7 @@ Ví dụ:
 
 | Giải pháp | Lý do |
 |-----------|-------|
-| **QUADStor VTL** | Đã chết, không có package cho OS mới, driver kernel không tương thích |
+| **QUADStor VTL** | ĐÃ ĐÓNG, không có package cho OS mới, driver kernel không tương thích |
 | **iSCSI_Tape** | Code từ 2013, không chạy được trên kernel mới |
 | **StarWind VTL Free** | Không Open Source, Windows-only, giới hạn 4 tapes |
 
@@ -498,7 +498,7 @@ Ví dụ:
 1. https://github.com/markh794/mhvtl - mhVTL (Mark Harvey)
 2. https://github.com/tomoconnor/mhvtl-gui - mhVTL Web GUI
 3. https://github.com/Holo-VTL/Holo - Holo-VTL (Rust, MIT)
-4. https://github.com/allfs/quadstorvtl - QUADStor VTL (đã chết)
+4. https://github.com/allfs/quadstorvtl - QUADStor VTL (ĐÃ ĐÓNG)
 5. https://github.com/midacts/quadstor - Script cài QUADStor cũ
 6. https://github.com/lz4/lz4 - LZ4 Compression
 
