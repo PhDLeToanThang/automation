@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VCF-9 Dashboard - Private Cloud TCO & Planning</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary: #005A9E;
+  --primary-dark: #003D6B;
+  --accent: #78BE20;
+  --bg: #F5F7FA;
+  --card: #FFFFFF;
+  --text: #2D2D2D;
+  --border: #D0D5DD;
+  --danger: #E53935;
+  --warning: #FB8C00;
+  --info: #1E88E5;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.5;
+}
+.top-bar {
+  background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+  color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.top-bar h1 { font-size:18px; font-weight:600; letter-spacing:.3px; display:flex; align-items:center; gap:10px; }
+.top-bar h1 span { font-weight:300; opacity:.8; }
+.top-bar-actions { display:flex; gap:8px; align-items:center; }
+.top-bar-actions button {
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  color:#fff; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:12px;
+  transition:.2s; display:flex; align-items:center; gap:6px;
+}
+.top-bar-actions button:hover { background:rgba(255,255,255,.25); }
+.tab-bar {
+  display:flex; background:var(--card); border-bottom:2px solid var(--border);
+  overflow-x:auto; position:sticky; top:52px; z-index:99;
+}
+.tab-btn {
+  padding:10px 20px; border:none; background:transparent; cursor:pointer;
+  font-size:13px; font-weight:500; color:#666; white-space:nowrap;
+  border-bottom:3px solid transparent; transition:.2s;
+}
+.tab-btn:hover { color:var(--primary); background:#F0F4FF; }
+.tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
+.container { max-width:1400px; margin:0 auto; padding:20px 24px; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+.card {
+  background:var(--card); border-radius:8px; border:1px solid var(--border);
+  padding:20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.card h2 { font-size:16px; font-weight:600; color:var(--primary); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid #E8ECF0; }
+.card h3 { font-size:14px; font-weight:600; margin-bottom:10px; color:#444; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.form-group { margin-bottom:12px; }
+.form-group label { display:block; font-size:12px; font-weight:500; color:#555; margin-bottom:4px; }
+.form-group input,.form-group select,.form-group textarea {
+  width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:4px;
+  font-size:13px; transition:.2s; font-family:inherit;
+}
+.form-group input:focus,.form-group select:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 2px rgba(0,90,158,.15); }
+.form-group textarea { resize:vertical; min-height:60px; }
+.form-group .hint { font-size:11px; color:#888; margin-top:2px; }
+input[type="checkbox"] { width:16px; height:16px; margin-right:8px; accent-color:var(--primary); }
+.check-item { display:flex; align-items:center; padding:4px 0; font-size:13px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+table th,table td { padding:8px 10px; text-align:left; border-bottom:1px solid #E8ECF0; }
+table th { background:#F0F4FF; font-weight:600; color:var(--primary-dark); font-size:12px; }
+table tr:hover { background:#FAFBFD; }
+.summary-row { background:#E8F5E9 !important; font-weight:600; }
+.summary-row td { border-top:2px solid var(--accent); }
+.badge {
+  display:inline-block; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:500;
+}
+.badge-green { background:#E8F5E9; color:#2E7D32; }
+.badge-blue { background:#E3F2FD; color:#1565C0; }
+.badge-orange { background:#FFF3E0; color:#E65100; }
+.badge-red { background:#FFEBEE; color:#C62828; }
+.chart-container { position:relative; height:300px; width:100%; }
+.chart-container-sm { position:relative; height:220px; width:100%; }
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.metric-card {
+  background:linear-gradient(135deg,#F0F4FF,#FAFBFF); border:1px solid #DDE4F0;
+  border-radius:6px; padding:14px; text-align:center;
+}
+.metric-card .value { font-size:22px; font-weight:700; color:var(--primary); }
+.metric-card .label { font-size:11px; color:#666; margin-top:4px; }
+.metric-card .trend { font-size:12px; font-weight:500; margin-top:6px; }
+.trend-up { color:var(--accent); } .trend-down { color:var(--danger); }
+.milestone { display:flex; gap:12px; margin-bottom:10px; align-items:flex-start; }
+.milestone-dot {
+  width:14px; height:14px; border-radius:50%; flex-shrink:0; margin-top:4px;
+  border:3px solid; background:#fff;
+}
+.milestone-dot.completed { border-color:var(--accent); background:var(--accent); }
+.milestone-dot.in-progress { border-color:var(--info); background:var(--info); }
+.milestone-dot.pending { border-color:#B0BEC5; background:#fff; }
+.milestone-info { flex:1; }
+.milestone-info h4 { font-size:13px; font-weight:600; }
+.milestone-info p { font-size:12px; color:#666; }
+.gantt { position:relative; padding:10px 0; }
+.gantt-row { display:flex; align-items:center; margin-bottom:8px; }
+.gantt-label { width:140px; font-size:12px; font-weight:500; flex-shrink:0; }
+.gantt-track { flex:1; height:24px; background:#F0F0F0; border-radius:4px; position:relative; overflow:hidden; margin:0 10px; }
+.gantt-bar {
+  position:absolute; top:2px; height:20px; border-radius:4px;
+  display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:500;
+}
+.gantt-week { display:flex; justify-content:space-between; margin:0 10px 4px; font-size:10px; color:#999; }
+.gantt-week span { width:20px; text-align:center; }
+.btn { padding:8px 20px; border-radius:4px; border:none; cursor:pointer; font-size:13px; font-weight:500; transition:.2s; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:var(--primary-dark); }
+.btn-outline { background:transparent; border:1px solid var(--primary); color:var(--primary); }
+.btn-outline:hover { background:#F0F4FF; }
+.btn-sm { padding:4px 12px; font-size:11px; }
+.text-right { text-align:right; }
+.text-center { text-align:center; }
+.mt-8 { margin-top:8px; } .mt-16 { margin-top:16px; }
+.mb-8 { margin-bottom:8px; } .mb-16 { margin-bottom:16px; }
+.sub-tab-bar { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
+.sub-tab-btn {
+  padding:5px 14px; border:1px solid var(--border); border-radius:4px;
+  background:var(--card); cursor:pointer; font-size:12px; font-weight:500; transition:.2s;
+}
+.sub-tab-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+.sub-tab-btn:hover:not(.active) { background:#F0F4FF; }
+.sub-tab-panel { display:none; }
+.sub-tab-panel.active { display:block; }
+.progress-bar { height:6px; background:#E8ECF0; border-radius:3px; overflow:hidden; margin:8px 0; }
+.progress-bar-fill { height:100%; border-radius:3px; transition:width .5s; background:linear-gradient(90deg,var(--accent),#8BC34A); }
+.risk-matrix { display:grid; grid-template-columns:50px 1fr 1fr 1fr 1fr 1fr; gap:4px; align-items:center; }
+.risk-matrix .header { font-weight:600; text-align:center; font-size:11px; padding:6px; background:#F0F4FF; }
+.risk-cell { text-align:center; padding:10px 4px; border-radius:4px; font-size:11px; font-weight:500; }
+.risk-very-low { background:#C8E6C9; color:#1B5E20; }
+.risk-low { background:#C5CAE9; color:#283593; }
+.risk-medium { background:#FFF9C4; color:#F57F17; }
+.risk-high { background:#FFCCBC; color:#BF360C; }
+.risk-very-high { background:#EF9A9A; color:#B71C1C; }
+@media(max-width:900px) {
+  .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+  .risk-matrix { grid-template-columns:50px 1fr; }
+  .top-bar h1 { font-size:15px; flex-wrap:wrap; }
+  .tab-btn { padding:8px 12px; font-size:12px; }
+  .gantt-label { width:100px; font-size:11px; }
+}
+@media print {
+  .top-bar,.tab-bar,.top-bar-actions { position:static; }
+  .tab-content { display:block !important; }
+  .no-print { display:none !important; }
+  body { font-size:11px; }
+  .card { break-inside:avoid; border:1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====== HEADER ====== -->
+<div class="top-bar">
+  <h1>
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <rect x="2" y="2" width="28" height="28" rx="6" fill="#78BE20"/>
+      <path d="M16 8l8 4v8l-8 4-8-4v-8l8-4z" fill="#fff" opacity=".9"/>
+      <circle cx="16" cy="16" r="4" fill="#fff"/>
+    </svg>
+    VCF-9 <span>Private Cloud Dashboard</span>
+  </h1>
+  <div class="top-bar-actions">
+    <button onclick="saveAllData()" title="Save">&#128190; Save</button>
+    <button onclick="loadAllData()" title="Load">&#128194; Load</button>
+    <button onclick="window.print()" title="Print / Export PDF">&#128424; Print</button>
+  </div>
+</div>
+
+<!-- ====== TAB BAR ====== -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('input')">&#128202; Input Data</button>
+  <button class="tab-btn" onclick="switchTab('capex')">&#128176; CAPEX</button>
+  <button class="tab-btn" onclick="switchTab('opex')">&#9881; OPEX</button>
+  <button class="tab-btn" onclick="switchTab('sow')">&#128221; SOW</button>
+  <button class="tab-btn" onclick="switchTab('roi')">&#128200; ROI</button>
+  <button class="tab-btn" onclick="switchTab('pmi')">&#128196; PMI</button>
+  <button class="tab-btn" onclick="switchTab('tco')">&#128202; TCO</button>
+</div>
+
+<div class="container">
+
+<!-- ============================================================== -->
+<!--  TAB 1: INPUT DATA                                              -->
+<!-- ============================================================== -->
+<div id="tab-input" class="tab-content active">
+  <div class="sub-tab-bar">
+    <button class="sub-tab-btn active" onclick="switchSubTab('input','prereq')">Prerequisites</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','mgmt')">Mgmt Domain</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','fleet')">Fleet Planning</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','workload')">Workload Domain</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','network')">Network</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','storage')">Storage</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','extsvc')">External Services</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('input','hardware')">Hardware Spec</button>
+  </div>
+
+  <!-- Sub-tab: Prerequisites -->
+  <div id="input-prereq" class="sub-tab-panel active">
+    <div class="card">
+      <h2>&#9989; Prerequisites Checklist</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Kiểm tra tất cả điều kiện tiên quyết trước khi triển khai VCF 9.0 Fleet</p>
+      <div class="grid-2">
+        <div>
+          <h3>Infrastructure</h3>
+          <div class="check-item"><input type="checkbox" id="pr-dns" data-save><label for="pr-dns">DNS servers configured and resolvable</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-ntp" data-save><label for="pr-ntp">NTP servers configured and synchronized</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-ad" data-save><label for="pr-ad">Active Directory / LDAP reachable</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-ca" data-save><label for="pr-ca">Certificate Authority (CA) ready</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-mgmt-net" data-save><label for="pr-mgmt-net">Management network VLANs configured</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-vsan-net" data-save><label for="pr-vsan-net">vSAN network VLANs configured (MTU 9000)</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-vmotion-net" data-save><label for="pr-vmotion-net">vMotion network VLANs configured</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-wl-net" data-save><label for="pr-wl-net">Workload network VLANs / NSX segments planned</label></div>
+        </div>
+        <div>
+          <h3>Licensing &amp; Software</h3>
+          <div class="check-item"><input type="checkbox" id="pr-vcf-lic" data-save><label for="pr-vcf-lic">VCF 9.0 licenses available (Broadcom)</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-vcf-inst" data-save><label for="pr-vcf-inst">VCF Installer downloaded &amp; verified</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-esx-iso" data-save><label for="pr-esx-iso">ESXi installation ISO ready</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-configmax" data-save><label for="pr-configmax">ConfigMax reports generated</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-ports" data-save><label for="pr-ports">Ports &amp; Protocols verified (ports.broadcom.com)</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-vsan-hcl" data-save><label for="pr-vsan-hcl">vSAN HCL verified for all hardware</label></div>
+          <div class="check-item"><input type="checkbox" id="pr-sn" data-save><label for="pr-sn">ServiceNow / ITSM ticket created</label></div>
+        </div>
+      </div>
+      <div class="mt-16">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span style="font-size:13px;font-weight:500;">Progress:</span>
+          <div class="progress-bar" style="flex:1;"><div class="progress-bar-fill" id="prereq-progress" style="width:0%"></div></div>
+          <span id="prereq-count" style="font-size:12px;font-weight:500;">0/14</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Management Domain -->
+  <div id="input-mgmt" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#128295; Management Domain Sizing</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on VCF Design Library item #1: VCF Operations Design, #8: vCenter Design</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Number of ESXi hosts</label>
+          <input type="number" id="mgmt-hosts" data-save value="4" min="3" max="16" onchange="calcMgmt()">
+          <span class="hint">Min 3 (HA requires 3+1 witness)</span>
+        </div>
+        <div class="form-group">
+          <label>vCPU per host</label>
+          <input type="number" id="mgmt-vcpu" data-save value="32" min="16" max="128">
+        </div>
+        <div class="form-group">
+          <label>RAM per host (GB)</label>
+          <input type="number" id="mgmt-ram" data-save value="512" min="128" max="2048">
+        </div>
+        <div class="form-group">
+          <label>vSAN capacity per host (GB)</label>
+          <input type="number" id="mgmt-vsan" data-save value="7680" min="1000" max="60000">
+        </div>
+        <div class="form-group">
+          <label>vSAN ESA caching per host (GB)</label>
+          <input type="number" id="mgmt-cache" data-save value="1600" min="400" max="12000">
+        </div>
+        <div class="form-group">
+          <label>Cluster type</label>
+          <select id="mgmt-cluster-type" data-save>
+            <option value="standard">Standard Cluster</option>
+            <option value="stretched" selected>Stretched Cluster (HA)</option>
+            <option value="vSAN-ESA">vSAN ESA All-Flash</option>
+          </select>
+        </div>
+      </div>
+      <table class="mt-16">
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Total vCPU (Mgmt)</td><td id="mgmt-total-vcpu">128</td></tr>
+        <tr><td>Total RAM (GB)</td><td id="mgmt-total-ram">2048</td></tr>
+        <tr><td>Total vSAN usable (TB)</td><td id="mgmt-total-vsan">23.0</td></tr>
+        <tr class="summary-row"><td>Recommended minimum hosts</td><td id="mgmt-recommend">4</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Fleet Planning -->
+  <div id="input-fleet" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#128666; VCF Fleet &amp; Instance Planning</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on VCF Taxonomy: Fleet &gt; Instance &gt; Domain (Section 3.1)</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Number of VCF Instances</label>
+          <input type="number" id="fleet-instances" data-save value="1" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <label>Design Blueprint</label>
+          <select id="fleet-blueprint" data-save>
+            <option value="1">BP1: Single Site - Minimal Footprint</option>
+            <option value="2" selected>BP2: Single Site - Full HA</option>
+            <option value="3">BP3: Multi-Site in Single Region</option>
+            <option value="4">BP4: Multi-Site across Multi Regions</option>
+            <option value="5">BP5: Single Region + Additional Region(s)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fleet Management model</label>
+          <select id="fleet-model" data-save>
+            <option value="single-instance" selected>Single Instance Fleet</option>
+            <option value="multi-instance">Multi-Instance Fleet</option>
+            <option value="federated">Federated Fleet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>VCF Automation enabled?</label>
+          <select id="fleet-automation" data-save>
+            <option value="yes" selected>Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Number of Sites</label>
+          <input type="number" id="fleet-sites" data-save value="1" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <label>Fleet Operations sizing</label>
+          <select id="fleet-ops-size" data-save>
+            <option value="small">Small (&lt;50 hosts)</option>
+            <option value="medium" selected>Medium (50-200 hosts)</option>
+            <option value="large">Large (200+ hosts)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Workload Domain -->
+  <div id="input-workload" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#128187; Workload Domain Planning</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on Design Library item #3: Workload Domain Design</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Number of Workload Domains</label>
+          <input type="number" id="wl-domains" data-save value="2" min="0" max="10">
+        </div>
+        <div class="form-group">
+          <label>Clusters per Domain</label>
+          <input type="number" id="wl-clusters" data-save value="2" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <label>Hosts per Cluster</label>
+          <input type="number" id="wl-hosts" data-save value="4" min="2" max="32">
+        </div>
+        <div class="form-group">
+          <label>vCPU per workload host</label>
+          <input type="number" id="wl-vcpu" data-save value="56" min="16" max="256">
+        </div>
+        <div class="form-group">
+          <label>RAM per workload host (GB)</label>
+          <input type="number" id="wl-ram" data-save value="1024" min="256" max="4096">
+        </div>
+        <div class="form-group">
+          <label>VM Density (VMs per host)</label>
+          <input type="number" id="wl-density" data-save value="30" min="5" max="200">
+        </div>
+        <div class="form-group">
+          <label>Domain isolation model</label>
+          <select id="wl-isolation" data-save>
+            <option value="shared" selected>Shared vCenter + NSX</option>
+            <option value="dedicated-vc">Dedicated vCenter per Domain</option>
+            <option value="fully-isolated">Fully Isolated (vCenter + NSX + Edge)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Workload type</label>
+          <select id="wl-type" data-save>
+            <option value="vm" selected>Virtual Machines</option>
+            <option value="container">Containers / Kubernetes</option>
+            <option value="mixed">Mixed VM + Container + AI/ML</option>
+          </select>
+        </div>
+      </div>
+      <table class="mt-16">
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Total ESXi hosts (workload)</td><td id="wl-total-hosts">16</td></tr>
+        <tr><td>Total vCPU (workload)</td><td id="wl-total-vcpu">896</td></tr>
+        <tr><td>Total RAM (GB)</td><td id="wl-total-ram">16384</td></tr>
+        <tr><td>Estimated VM capacity</td><td id="wl-total-vms">480</td></tr>
+        <tr class="summary-row"><td>Estimated VM capacity (with overcommit 2:1)</td><td id="wl-total-vms-oc">960</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Network -->
+  <div id="input-network" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#127760; Network Planning</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on Design Library item #6: Network Design, #14: NSX Management, #15: Workload Networking</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Management VLAN ID</label>
+          <input type="number" id="net-mgmt-vlan" data-save value="100" min="1" max="4094">
+        </div>
+        <div class="form-group">
+          <label>vSAN VLAN ID</label>
+          <input type="number" id="net-vsan-vlan" data-save value="200" min="1" max="4094">
+        </div>
+        <div class="form-group">
+          <label>vMotion VLAN ID</label>
+          <input type="number" id="net-vmotion-vlan" data-save value="300" min="1" max="4094">
+        </div>
+        <div class="form-group">
+          <label>Management subnet (CIDR)</label>
+          <input type="text" id="net-mgmt-subnet" data-save value="10.10.0.0/24">
+        </div>
+        <div class="form-group">
+          <label>vSAN subnet (CIDR)</label>
+          <input type="text" id="net-vsan-subnet" data-save value="10.10.1.0/24">
+        </div>
+        <div class="form-group">
+          <label>vMotion subnet (CIDR)</label>
+          <input type="text" id="net-vmotion-subnet" data-save value="10.10.2.0/24">
+        </div>
+        <div class="form-group">
+          <label>NSX VPC count</label>
+          <input type="number" id="net-vpc" data-save value="5" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label>NSX Segments</label>
+          <input type="number" id="net-segments" data-save value="20" min="1" max="500">
+        </div>
+        <div class="form-group">
+          <label>Edge Cluster nodes</label>
+          <select id="net-edge-nodes" data-save>
+            <option value="2">2 (Medium)</option>
+            <option value="4" selected>4 (Large)</option>
+            <option value="6">6 (XL)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Storage -->
+  <div id="input-storage" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#128190; Storage Planning</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on Design Library item #7: Storage Design (vSAN ESA, NFS, FC, vVOLS)</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Primary storage type</label>
+          <select id="st-type" data-save>
+            <option value="vsan-esa" selected>vSAN ESA (All-Flash)</option>
+            <option value="nfs">NFS</option>
+            <option value="fc">Fibre Channel</option>
+            <option value="vvolls">vVOLS</option>
+            <option value="hybrid">Hybrid vSAN + NFS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>vSAN ESA capacity per host (TB)</label>
+          <input type="number" id="st-vsan-cap" data-save value="15" min="2" max="120" step="0.5">
+        </div>
+        <div class="form-group">
+          <label>vSAN ESA failure tolerance</label>
+          <select id="st-ftt" data-save>
+            <option value="0">FTT=0 (No redundancy)</option>
+            <option value="1" selected>FTT=1 (RAID-1 mirroring)</option>
+            <option value="2">FTT=2 (RAID-6 erasure)</option>
+            <option value="3">FTT=3 (RAID-6 across sites)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Deduplication &amp; Compression</label>
+          <select id="st-dedup" data-save>
+            <option value="yes" selected>Enabled (~2.5x savings)</option>
+            <option value="no">Disabled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>NFS capacity (TB) if applicable</label>
+          <input type="number" id="st-nfs-cap" data-save value="50" min="0" max="1000">
+        </div>
+        <div class="form-group">
+          <label>Backup storage (TB)</label>
+          <input type="number" id="st-backup" data-save value="20" min="0" max="500">
+        </div>
+      </div>
+      <table class="mt-16">
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>vSAN raw capacity (TB)</td><td id="st-raw">240.0</td></tr>
+        <tr><td>vSAN usable after FTT (TB)</td><td id="st-usable">120.0</td></tr>
+        <tr><td>vSAN effective with dedup (TB)</td><td id="st-effective">300.0</td></tr>
+        <tr class="summary-row"><td>Total effective capacity (TB)</td><td id="st-total">370.0</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sub-tab: External Services -->
+  <div id="input-extsvc" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#127760; External Services</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on Design Library item #10: External Services, #11: Information Security</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Primary DNS server</label>
+          <input type="text" id="ext-dns1" data-save value="10.10.0.10">
+        </div>
+        <div class="form-group">
+          <label>Secondary DNS server</label>
+          <input type="text" id="ext-dns2" data-save value="10.10.0.11">
+        </div>
+        <div class="form-group">
+          <label>Primary NTP server</label>
+          <input type="text" id="ext-ntp1" data-save value="10.10.0.20">
+        </div>
+        <div class="form-group">
+          <label>Secondary NTP server</label>
+          <input type="text" id="ext-ntp2" data-save value="10.10.0.21">
+        </div>
+        <div class="form-group">
+          <label>AD/LDAP domain</label>
+          <input type="text" id="ext-ad-domain" data-save value="vcf.local">
+        </div>
+        <div class="form-group">
+          <label>SSO domain name</label>
+          <input type="text" id="ext-sso" data-save value="vcf.local">
+        </div>
+        <div class="form-group">
+          <label>Certificate authority type</label>
+          <select id="ext-ca" data-save>
+            <option value="internal" selected>Internal CA (Windows AD CS)</option>
+            <option value="public">Public CA (DigiCert/Let's Encrypt)</option>
+            <option value="self-signed">Self-Signed (lab only)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Email notifications (SMTP)</label>
+          <input type="text" id="ext-smtp" data-save value="smtp.vcf.local:25">
+        </div>
+        <div class="form-group">
+          <label>Syslog server</label>
+          <input type="text" id="ext-syslog" data-save value="10.10.0.30:514">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tab: Hardware Spec -->
+  <div id="input-hardware" class="sub-tab-panel">
+    <div class="card">
+      <h2>&#128421; Hardware Specification</h2>
+      <p style="margin-bottom:12px;font-size:13px;color:#666;">Based on Design Library item #9: ESX Design</p>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Server vendor / model</label>
+          <input type="text" id="hw-model" data-save value="Dell PowerEdge R750">
+        </div>
+        <div class="form-group">
+          <label>CPU model</label>
+          <input type="text" id="hw-cpu" data-save value="Intel Xeon Gold 6448H (32C, 2.4GHz)">
+        </div>
+        <div class="form-group">
+          <label>Sockets per host</label>
+          <input type="number" id="hw-sockets" data-save value="2" min="1" max="4">
+        </div>
+        <div class="form-group">
+          <label>Cores per socket</label>
+          <input type="number" id="hw-cores" data-save value="32" min="8" max="128">
+        </div>
+        <div class="form-group">
+          <label>RAM configuration (GB)</label>
+          <input type="text" id="hw-ram-config" data-save value="16x 32GB DDR5">
+        </div>
+        <div class="form-group">
+          <label>Storage controller</label>
+          <input type="text" id="hw-ctrl" data-save value="PERC H755 (NVMe/SAS)">
+        </div>
+        <div class="form-group">
+          <label>Network NIC</label>
+          <input type="text" id="hw-nic" data-save value="Dual Port 25GbE">
+        </div>
+        <div class="form-group">
+          <label>Rack units (U) per host</label>
+          <input type="number" id="hw-ru" data-save value="1" min="1" max="4">
+        </div>
+        <div class="form-group">
+          <label>Warranty (years)</label>
+          <input type="number" id="hw-warranty" data-save value="3" min="1" max="5">
+        </div>
+        <div class="form-group">
+          <label>Unit price per server (USD)</label>
+          <input type="number" id="hw-price" data-save value="35000" min="5000" max="200000">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Networking Hardware</h2>
+      <div class="grid-3">
+        <div class="form-group">
+          <label>Top-of-Rack switch model</label>
+          <input type="text" id="hw-tor" data-save value="Cisco Nexus 93180YC-FX3">
+        </div>
+        <div class="form-group">
+          <label>ToR switches count</label>
+          <input type="number" id="hw-tor-count" data-save value="4" min="2" max="32">
+        </div>
+        <div class="form-group">
+          <label>ToR price per unit (USD)</label>
+          <input type="number" id="hw-tor-price" data-save value="25000" min="5000" max="150000">
+        </div>
+        <div class="form-group">
+          <label>Spine switch model</label>
+          <input type="text" id="hw-spine" data-save value="Cisco Nexus 9364C">
+        </div>
+        <div class="form-group">
+          <label>Spine switches count</label>
+          <input type="number" id="hw-spine-count" data-save value="2" min="0" max="8">
+        </div>
+        <div class="form-group">
+          <label>Spine price per unit (USD)</label>
+          <input type="number" id="hw-spine-price" data-save value="45000" min="10000" max="200000">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!--  TAB 2: CAPEX                                                   -->
+<!-- ============================================================== -->
+<div id="tab-capex" class="tab-content">
+  <div class="card">
+    <h2>&#128176; Capital Expenditure (CAPEX) — VCF 9.0 Private Cloud</h2>
+    <div class="metrics">
+      <div class="metric-card"><div class="value" id="capex-total-day0">$0</div><div class="label">Day 0 - Planning &amp; Hardware</div></div>
+      <div class="metric-card"><div class="value" id="capex-total-day1">$0</div><div class="label">Day 1 - Deployment &amp; Licensing</div></div>
+      <div class="metric-card"><div class="value" id="capex-total-day2">$0</div><div class="label">Day 2 - Expansion &amp; Warranty</div></div>
+      <div class="metric-card"><div class="value" id="capex-grand-total">$0</div><div class="label">Total CAPEX</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2>Day 0 — Planning &amp; Infrastructure</h2>
+      <table id="capex-day0-table">
+        <tr><th>Item</th><th>Qty</th><th>Unit Cost</th><th>Total</th></tr>
+        <tr><td>Compute servers</td><td id="d0-srv-qty">20</td><td id="d0-srv-unit">$35,000</td><td id="d0-srv-total">$700,000</td></tr>
+        <tr><td>ToR switches</td><td id="d0-tor-qty">4</td><td id="d0-tor-unit">$25,000</td><td id="d0-tor-total">$100,000</td></tr>
+        <tr><td>Spine switches</td><td id="d0-spine-qty">2</td><td id="d0-spine-unit">$45,000</td><td id="d0-spine-total">$90,000</td></tr>
+        <tr><td>Cabling &amp; optics</td><td id="d0-cable-qty">1</td><td id="d0-cable-unit">$15,000</td><td id="d0-cable-total">$15,000</td></tr>
+        <tr><td>Rack &amp; PDU</td><td id="d0-rack-qty">3</td><td id="d0-rack-unit">$8,000</td><td id="d0-rack-total">$24,000</td></tr>
+        <tr><td>UPS / Power</td><td id="d0-ups-qty">1</td><td id="d0-ups-unit">$35,000</td><td id="d0-ups-total">$35,000</td></tr>
+        <tr class="summary-row"><td>Day 0 Subtotal</td><td></td><td></td><td id="d0-subtotal">$964,000</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Day 1 — Deployment &amp; Software</h2>
+      <table id="capex-day1-table">
+        <tr><th>Item</th><th>Qty</th><th>Unit Cost</th><th>Total</th></tr>
+        <tr><td>VCF 9.0 per-core license</td><td id="d1-lic-qty">640</td><td id="d1-lic-unit">$350</td><td id="d1-lic-total">$224,000</td></tr>
+        <tr><td>Professional services (weeks)</td><td id="d1-ps-qty">12</td><td id="d1-ps-unit">$15,000</td><td id="d1-ps-total">$180,000</td></tr>
+        <tr><td>Training &amp; certification</td><td id="d1-tr-qty">1</td><td id="d1-tr-unit">$25,000</td><td id="d1-tr-total">$25,000</td></tr>
+        <tr class="summary-row"><td>Day 1 Subtotal</td><td></td><td></td><td id="d1-subtotal">$429,000</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Day 2 — Expansion &amp; Warranty (Year 1)</h2>
+    <div class="grid-3">
+      <table>
+        <tr><th>Item</th><th>Total</th></tr>
+        <tr><td>SnS Renewal (25% of license)</td><td id="d2-sns">$56,000</td></tr>
+        <tr><td>Hardware warranty extension</td><td id="d2-warranty">$45,000</td></tr>
+        <tr><td>Additional host expansion</td><td id="d2-expansion">$70,000</td></tr>
+        <tr class="summary-row"><td>Day 2 Subtotal</td><td id="d2-subtotal">$171,000</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>CAPEX Breakdown Chart</h2>
+    <div class="chart-container"><canvas id="capexChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!--  TAB 3: OPEX                                                    -->
+<!-- ============================================================== -->
+<div id="tab-opex" class="tab-content">
+  <div class="metrics">
+    <div class="metric-card"><div class="value" id="opex-annual">$0</div><div class="label">Annual OPEX (Year 1)</div></div>
+    <div class="metric-card"><div class="value" id="opex-5year">$0</div><div class="label">5-Year OPEX</div></div>
+    <div class="metric-card"><div class="value" id="opex-pct-of-tco">0%</div><div class="label">OPEX as % of TCO</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2>&#9889; Power &amp; Cooling</h2>
+      <div class="form-group">
+        <label>Total hosts</label>
+        <input type="number" id="opex-hosts" data-save value="20" min="1" max="500" onchange="calcOPEX()">
+      </div>
+      <div class="form-group">
+        <label>Watts per host (idle/load)</label>
+        <input type="text" id="opex-watt" data-save value="600/900" placeholder="e.g. 600/900">
+      </div>
+      <div class="form-group">
+        <label>PUE (Power Usage Effectiveness)</label>
+        <input type="number" id="opex-pue" data-save value="1.6" min="1.0" max="2.5" step="0.05">
+      </div>
+      <div class="form-group">
+        <label>Cost per kWh (USD)</label>
+        <input type="number" id="opex-kwh" data-save value="0.12" min="0.01" max="0.50" step="0.01">
+      </div>
+      <table class="mt-16">
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Annual power (hosts)</td><td id="opex-pwr-hosts">$0</td></tr>
+        <tr><td>Annual cooling</td><td id="opex-pwr-cool">$0</td></tr>
+        <tr class="summary-row"><td>Total Power &amp; Cooling</td><td id="opex-pwr-total">$0</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>&#128101; Staffing</h2>
+      <p style="font-size:12px;color:#666;margin-bottom:8px;">Based on Section 7.4: Roles &amp; Functions</p>
+      <table>
+        <tr><th>Role</th><th>FTE</th><th>Annual Salary</th><th>Total</th></tr>
+        <tr><td>Cloud Admin</td><td><input type="number" id="staff-ca" data-save value="1" min="0" max="5" style="width:50px" onchange="calcOPEX()"></td><td>$120,000</td><td id="staff-ca-total">$120,000</td></tr>
+        <tr><td>VI Admin</td><td><input type="number" id="staff-vi" data-save value="2" min="0" max="10" style="width:50px" onchange="calcOPEX()"></td><td>$95,000</td><td id="staff-vi-total">$190,000</td></tr>
+        <tr><td>Security Admin</td><td><input type="number" id="staff-sec" data-save value="1" min="0" max="5" style="width:50px" onchange="calcOPEX()"></td><td>$110,000</td><td id="staff-sec-total">$110,000</td></tr>
+        <tr><td>DevOps/Developer</td><td><input type="number" id="staff-dev" data-save value="2" min="0" max="20" style="width:50px" onchange="calcOPEX()"></td><td>$105,000</td><td id="staff-dev-total">$210,000</td></tr>
+        <tr><td>Platform Admin</td><td><input type="number" id="staff-plat" data-save value="1" min="0" max="5" style="width:50px" onchange="calcOPEX()"></td><td>$115,000</td><td id="staff-plat-total">$115,000</td></tr>
+        <tr class="summary-row"><td>Total Staffing</td><td id="staff-total-fte">7</td><td></td><td id="staff-total-cost">$745,000</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2>&#128295; Maintenance</h2>
+      <div class="form-group">
+        <label>VCF SnS renewal (% of license)</label>
+        <input type="number" id="opex-sns" data-save value="25" min="15" max="35">
+      </div>
+      <div class="form-group">
+        <label>Hardware maintenance (% of HW cost)</label>
+        <input type="number" id="opex-hw-maint" data-save value="8" min="5" max="20">
+      </div>
+      <table class="mt-16">
+        <tr><td>License SnS (annual)</td><td id="opex-sns-annual">$56,000</td></tr>
+        <tr><td>Hardware maintenance</td><td id="opex-hwm-annual">$0</td></tr>
+        <tr class="summary-row"><td>Total Maintenance</td><td id="opex-maint-total">$0</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>&#127970; Facility &amp; Other</h2>
+      <div class="form-group">
+        <label>Rack space per rack (monthly)</label>
+        <input type="number" id="opex-rack-monthly" data-save value="1200" min="200" max="10000">
+      </div>
+      <div class="form-group">
+        <label>Number of racks</label>
+        <input type="number" id="opex-num-racks" data-save value="3" min="1" max="50">
+      </div>
+      <div class="form-group">
+        <label>Training &amp; certification (annual)</label>
+        <input type="number" id="opex-training" data-save value="15000" min="0" max="100000">
+      </div>
+      <table class="mt-16">
+        <tr><td>Rack space (annual)</td><td id="opex-rack-annual">$43,200</td></tr>
+        <tr><td>Training (annual)</td><td id="opex-train-annual">$15,000</td></tr>
+        <tr class="summary-row"><td>Total Facility &amp; Other</td><td id="opex-fac-total">$58,200</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>OPEX Breakdown Charts</h2>
+    <div class="grid-2">
+      <div class="chart-container-sm"><canvas id="opexPieChart"></canvas></div>
+      <div class="chart-container-sm"><canvas id="opexYearChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!--  TAB 4: SOW                                                     -->
+<!-- ============================================================== -->
+<div id="tab-sow" class="tab-content">
+  <div class="card">
+    <h2>&#128221; Statement of Work — VCF 9.0 Private Cloud Implementation</h2>
+    <p style="font-size:13px;color:#666;">Based on Section 10.5: Deployment Flow — Day 0 / Day 1 / Day 2</p>
+  </div>
+  <div class="grid-3">
+    <div class="card">
+      <h2>&#128203; Day 0 — Planning (Weeks 1-4)</h2>
+      <div class="check-item"><input type="checkbox" id="sow-d0-1" data-save><label for="sow-d0-1">Workshop &amp; requirements gathering</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-2" data-save><label for="sow-d0-2">Design Blueprint selection (BP1-BP5)</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-3" data-save><label for="sow-d0-3">Planning Workbook completion</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-4" data-save><label for="sow-d0-4">Hardware sizing &amp; procurement</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-5" data-save><label for="sow-d0-5">Network design &amp; IP allocation</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-6" data-save><label for="sow-d0-6">ConfigMax validation</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-7" data-save><label for="sow-d0-7">Ports &amp; Protocols review</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d0-8" data-save><label for="sow-d0-8">DNS/NTP/AD prerequisites ready</label></div>
+      <div class="badge badge-blue">4 weeks</div>
+    </div>
+    <div class="card">
+      <h2>&#128679; Day 1 — Deployment (Weeks 5-12)</h2>
+      <div class="check-item"><input type="checkbox" id="sow-d1-1" data-save><label for="sow-d1-1">Rack &amp; stack hardware</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-2" data-save><label for="sow-d1-2">ESXi installation &amp; configuration</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-3" data-save><label for="sow-d1-3">VCF Installer bootstrap</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-4" data-save><label for="sow-d1-4">Management Domain deployment</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-5" data-save><label for="sow-d1-5">vCenter + NSX Manager config</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-6" data-save><label for="sow-d1-6">vSAN ESA cluster configuration</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-7" data-save><label for="sow-d1-7">Workload Domain deployment</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-8" data-save><label for="sow-d1-8">NSX Edge cluster + Tier-0/1 config</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-9" data-save><label for="sow-d1-9">VCF Automation setup</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d1-10" data-save><label for="sow-d1-10">Integration testing &amp; validation</label></div>
+      <div class="badge badge-green">8 weeks</div>
+    </div>
+    <div class="card">
+      <h2>&#128257; Day 2 — Operate (Week 13+)</h2>
+      <div class="check-item"><input type="checkbox" id="sow-d2-1" data-save><label for="sow-d2-1">VCF Operations monitoring setup</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-2" data-save><label for="sow-d2-2">Fleet management dashboard</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-3" data-save><label for="sow-d2-3">Lifecycle management enablement</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-4" data-save><label for="sow-d2-4">Backup &amp; DR configuration</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-5" data-save><label for="sow-d2-5">Cost &amp; capacity management</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-6" data-save><label for="sow-d2-6">Security &amp; compliance policies</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-7" data-save><label for="sow-d2-7">Self-service portal for developers</label></div>
+      <div class="check-item"><input type="checkbox" id="sow-d2-8" data-save><label for="sow-d2-8">Knowledge transfer &amp; handover</label></div>
+      <div class="badge badge-orange">Ongoing</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Key Deliverables</h2>
+    <table>
+      <tr><th>Deliverable</th><th>Phase</th><th>Description</th></tr>
+      <tr><td>VCF Planning Workbook</td><td><span class="badge badge-blue">Day 0</span></td><td>Completed Excel workbook with all inputs</td></tr>
+      <tr><td>Architecture Design Document</td><td><span class="badge badge-blue">Day 0</span></td><td>Blueprint selection, component design, network topology</td></tr>
+      <tr><td>Management Domain Operational</td><td><span class="badge badge-green">Day 1</span></td><td>SDDC Manager, vCenter, NSX Manager, vSAN cluster</td></tr>
+      <tr><td>Workload Domain(s) Operational</td><td><span class="badge badge-green">Day 1</span></td><td>vCenter + NSX + vSphere clusters per domain</td></tr>
+      <tr><td>NSX Edge Configuration</td><td><span class="badge badge-green">Day 1</span></td><td>Tier-0/Tier-1 gateways, VPCs, segments</td></tr>
+      <tr><td>VCF Automation Portal</td><td><span class="badge badge-green">Day 1</span></td><td>Self-service IaaS, Kubernetes, governance policies</td></tr>
+      <tr><td>Operations Runbook</td><td><span class="badge badge-orange">Day 2</span></td><td>Monitoring, backup, DR, lifecycle procedures</td></tr>
+      <tr><td>Fleet Management Dashboard</td><td><span class="badge badge-orange">Day 2</span></td><td>VCF Operations: monitoring, cost, capacity</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!--  TAB 5: ROI                                                     -->
+<!-- ============================================================== -->
+<div id="tab-roi" class="tab-content">
+  <div class="card">
+    <h2>&#128200; Return on Investment — VCF 9.0 Private Cloud</h2>
+  </div>
+  <div class="metrics">
+    <div class="metric-card"><div class="value" id="roi-payback">0 yrs</div><div class="label">Payback Period</div></div>
+    <div class="metric-card"><div class="value" id="roi-npv">$0</div><div class="label">NPV (5 Years)</div></div>
+    <div class="metric-card"><div class="value" id="roi-irr">0%</div><div class="label">IRR</div></div>
+    <div class="metric-card"><div class="value" id="roi-5y-savings">$0</div><div class="label">5-Year Net Savings</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2>VCF vs Traditional Infrastructure - TCO Comparison</h2>
+      <p style="font-size:12px;color:#666;margin-bottom:8px;">Based on Section 8.1: Economic Benefits — Giảm TCO</p>
+      <table>
+        <tr><th>Category</th><th>Traditional (Annual)</th><th>VCF 9.0 (Annual)</th><th>Savings</th></tr>
+        <tr><td>Hardware</td><td id="tco-trad-hw">$350,000</td><td id="tco-vcf-hw">$250,000</td><td id="tco-sav-hw" class="trend-up">$100,000</td></tr>
+        <tr><td>Software Licensing</td><td id="tco-trad-sw">$180,000</td><td id="tco-vcf-sw">$120,000</td><td id="tco-sav-sw" class="trend-up">$60,000</td></tr>
+        <tr><td>Staffing</td><td id="tco-trad-staff">$1,200,000</td><td id="tco-vcf-staff">$745,000</td><td id="tco-sav-staff" class="trend-up">$455,000</td></tr>
+        <tr><td>Power &amp; Cooling</td><td id="tco-trad-pwr">$180,000</td><td id="tco-vcf-pwr">$120,000</td><td id="tco-sav-pwr" class="trend-up">$60,000</td></tr>
+        <tr><td>Facility</td><td id="tco-trad-fac">$60,000</td><td id="tco-vcf-fac">$55,000</td><td id="tco-sav-fac" class="trend-up">$5,000</td></tr>
+        <tr><td>Maintenance</td><td id="tco-trad-maint">$120,000</td><td id="tco-vcf-maint">$80,000</td><td id="tco-sav-maint" class="trend-up">$40,000</td></tr>
+        <tr class="summary-row"><td>Total Annual</td><td id="tco-trad-total">$2,090,000</td><td id="tco-vcf-total">$1,370,000</td><td id="tco-sav-total" class="trend-up">$720,000</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>5-Year Financial Projection</h2>
+      <table>
+        <tr><th>Year</th><th>VCF Cost</th><th>Traditional Cost</th><th>Net Savings</th><th>Cumulative Savings</th></tr>
+        <tr><td>Year 1</td><td id="fyn1-vcf">$1,564,000</td><td id="fyn1-trad">$2,090,000</td><td id="fyn1-sav" class="trend-up">$526,000</td><td id="fyn1-cum" class="trend-up">$526,000</td></tr>
+        <tr><td>Year 2</td><td id="fyn2-vcf">$1,370,000</td><td id="fyn2-trad">$2,090,000</td><td id="fyn2-sav" class="trend-up">$720,000</td><td id="fyn2-cum" class="trend-up">$1,246,000</td></tr>
+        <tr><td>Year 3</td><td id="fyn3-vcf">$1,370,000</td><td id="fyn3-trad">$2,090,000</td><td id="fyn3-sav" class="trend-up">$720,000</td><td id="fyn3-cum" class="trend-up">$1,966,000</td></tr>
+        <tr><td>Year 4</td><td id="fyn4-vcf">$1,370,000</td><td id="fyn4-trad">$2,090,000</td><td id="fyn4-sav" class="trend-up">$720,000</td><td id="fyn4-cum" class="trend-up">$2,686,000</td></tr>
+        <tr><td>Year 5</td><td id="fyn5-vcf">$1,370,000</td><td id="fyn5-trad">$2,090,000</td><td id="fyn5-sav" class="trend-up">$720,000</td><td id="fyn5-cum" class="trend-up">$3,406,000</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>ROI Chart — Cumulative Savings Over 5 Years</h2>
+    <div class="chart-container"><canvas id="roiChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!--  TAB 6: PMI                                                    -->
+<!-- ============================================================== -->
+<div id="tab-pmi" class="tab-content">
+  <div class="card">
+    <h2>&#128196; Project Management Integration — VCF 9.0 Rollout</h2>
+  </div>
+  <div class="card">
+    <h2>&#128197; Timeline — Gantt Chart (12-Week Rollout)</h2>
+    <div class="gantt">
+      <div class="gantt-week">
+        <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span><span>W10</span><span>W11</span><span>W12</span>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Day 0: Planning</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:0%;width:33%;background:#1565C0;">Planning</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Procurement</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:8%;width:25%;background:#FB8C00;">Procure</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Hardware Setup</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:25%;width:17%;background:#7B1FA2;">Rack</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Day 1: Mgmt Domain</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:33%;width:25%;background:#2E7D32;">Mgmt</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Day 1: Workload Domain</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:50%;width:25%;background:#00695C;">Workload</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Day 1: NSX &amp; Automation</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:58%;width:25%;background:#004D40;">NSX/Auto</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Testing &amp; Validation</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:67%;width:25%;background:#E65100;">Testing</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Day 2: Operations</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:83%;width:17%;background:#1A237E;">Ops</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Handover &amp; Go-Live</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:92%;width:8%;background:#78BE20;">Go!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2>&#127919; Milestones</h2>
+      <div class="milestone">
+        <div class="milestone-dot in-progress"></div>
+        <div class="milestone-info"><h4>M1: Design Approved</h4><p>Week 2 — Blueprint selected, Workbook completed</p></div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-dot pending"></div>
+        <div class="milestone-info"><h4>M2: Hardware Delivered</h4><p>Week 3 — All servers, switches, cabling on-site</p></div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-dot pending"></div>
+        <div class="milestone-info"><h4>M3: Management Domain Ready</h4><p>Week 7 — SDDC Mgr, vCenter, NSX, vSAN operational</p></div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-dot pending"></div>
+        <div class="milestone-info"><h4>M4: Workload Domain Ready</h4><p>Week 10 — All workload clusters provisioned</p></div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-dot pending"></div>
+        <div class="milestone-info"><h4>M5: NSX Edge Configured</h4><p>Week 10 — T0/T1 gateways, VPCs, segments</p></div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-dot pending"></div>
+        <div class="milestone-info"><h4>M6: Go-Live</h4><p>Week 12 — Production ready, handover complete</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>&#9888; Risk Register</h2>
+      <table>
+        <tr><th>Risk</th><th>Probability</th><th>Impact</th><th>Mitigation</th></tr>
+        <tr><td>Hardware delivery delay</td><td><span class="badge badge-orange">Medium</span></td><td><span class="badge badge-red">High</span></td><td>Order early, maintain buffer stock</td></tr>
+        <tr><td>Network misconfiguration</td><td><span class="badge badge-orange">Medium</span></td><td><span class="badge badge-orange">Medium</span></td><td>Pre-validate with ConfigMax</td></tr>
+        <tr><td>Insufficient vSAN capacity</td><td><span class="badge badge-blue">Low</span></td><td><span class="badge badge-orange">Medium</span></td><td>Over-provision 30%, monitor growth</td></tr>
+        <tr><td>License compliance issues</td><td><span class="badge badge-blue">Low</span></td><td><span class="badge badge-red">High</span></td><td>Pre-audit with Broadcom portal</td></tr>
+        <tr><td>Staff availability</td><td><span class="badge badge-orange">Medium</span></td><td><span class="badge badge-orange">Medium</span></td><td>Cross-train, engage PS for critical path</td></tr>
+        <tr><td>Integration with existing systems</td><td><span class="badge badge-orange">Medium</span></td><td><span class="badge badge-orange">Medium</span></td><td>Early POC, phased roll-out</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Risk Matrix (Probability x Impact)</h2>
+    <div class="risk-matrix">
+      <div></div>
+      <div class="header">Very Low</div>
+      <div class="header">Low</div>
+      <div class="header">Medium</div>
+      <div class="header">High</div>
+      <div class="header">Very High</div>
+      <div class="risk-cell" style="font-weight:600;">Very High</div>
+      <div class="risk-cell risk-very-low"></div><div class="risk-cell risk-low"></div><div class="risk-cell risk-medium"></div><div class="risk-cell risk-high"></div><div class="risk-cell risk-very-high"></div>
+      <div class="risk-cell" style="font-weight:600;">High</div>
+      <div class="risk-cell risk-very-low"></div><div class="risk-cell risk-low"></div><div class="risk-cell risk-medium"></div><div class="risk-cell risk-high">HW delay</div><div class="risk-cell risk-very-high"></div>
+      <div class="risk-cell" style="font-weight:600;">Medium</div>
+      <div class="risk-cell risk-very-low"></div><div class="risk-cell risk-low"></div><div class="risk-cell risk-medium">Network</div><div class="risk-cell risk-high">Staff</div><div class="risk-cell risk-very-high"></div>
+      <div class="risk-cell" style="font-weight:600;">Low</div>
+      <div class="risk-cell risk-very-low"></div><div class="risk-cell risk-low">vSAN</div><div class="risk-cell risk-medium">Integration</div><div class="risk-cell risk-high"></div><div class="risk-cell risk-very-high"></div>
+      <div class="risk-cell" style="font-weight:600;">Very Low</div>
+      <div class="risk-cell risk-very-low"></div><div class="risk-cell risk-low"></div><div class="risk-cell risk-medium"></div><div class="risk-cell risk-high"></div><div class="risk-cell risk-very-high"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>&#128101; Resource Plan</h2>
+    <div class="grid-2">
+      <table>
+        <tr><th>Role</th><th>Allocation</th><th>Responsibility</th></tr>
+        <tr><td>Project Manager</td><td>100% (W1-W12)</td><td>Overall coordination, stakeholder mgmt</td></tr>
+        <tr><td>Cloud Architect</td><td>100% (W1-W8)</td><td>Design, blueprint selection, sizing</td></tr>
+        <tr><td>VI Admin</td><td>100% (W3-W12)</td><td>vSphere, vSAN, NSX implementation</td></tr>
+        <tr><td>Network Engineer</td><td>50% (W1-W10)</td><td>Physical + virtual networking</td></tr>
+        <tr><td>Security Admin</td><td>25% (W1-W12)</td><td>Compliance, certificates, micro-seg</td></tr>
+        <tr><td>Platform Admin</td><td>50% (W5-W12)</td><td>VCF Automation, Operations</td></tr>
+      </table>
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:48px;">&#128101;</div>
+        <div style="font-size:18px;font-weight:600;color:var(--primary);">6 Team Members</div>
+        <div style="font-size:13px;color:#666;">~ 7.25 FTE total allocation</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!--  TAB 7: TCO                                                    -->
+<!-- ============================================================== -->
+<div id="tab-tco" class="tab-content">
+  <div class="card">
+    <h2>&#128202; Total Cost of Ownership — VCF 9.0 Private Cloud (5-Year View)</h2>
+    <p style="font-size:13px;color:#666;">Based on Section 8.1: Economic Benefits — Giảm TCO, Tối Ưu Hardware</p>
+  </div>
+  <div class="metrics">
+    <div class="metric-card"><div class="value" id="tco-5y-total">$0</div><div class="label">5-Year TCO</div></div>
+    <div class="metric-card"><div class="value" id="tco-per-vm">$0</div><div class="label">Cost per VM (5-year)</div></div>
+    <div class="metric-card"><div class="value" id="tco-vs-trad">$0</div><div class="label">5-Year Savings vs Traditional</div></div>
+    <div class="metric-card"><div class="value" id="tco-annual">$0</div><div class="label">Average Annual Cost</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2>5-Year TCO Breakdown</h2>
+      <table>
+        <tr><th>Year</th><th>CAPEX</th><th>OPEX</th><th>Total</th><th>Cumulative</th></tr>
+        <tr><td>Year 1</td><td id="tco-y1-capex">$0</td><td id="tco-y1-opex">$0</td><td id="tco-y1-total">$0</td><td id="tco-y1-cum">$0</td></tr>
+        <tr><td>Year 2</td><td id="tco-y2-capex">$0</td><td id="tco-y2-opex">$0</td><td id="tco-y2-total">$0</td><td id="tco-y2-cum">$0</td></tr>
+        <tr><td>Year 3</td><td id="tco-y3-capex">$0</td><td id="tco-y3-opex">$0</td><td id="tco-y3-total">$0</td><td id="tco-y3-cum">$0</td></tr>
+        <tr><td>Year 4</td><td id="tco-y4-capex">$0</td><td id="tco-y4-opex">$0</td><td id="tco-y4-total">$0</td><td id="tco-y4-cum">$0</td></tr>
+        <tr><td>Year 5</td><td id="tco-y5-capex">$0</td><td id="tco-y5-opex">$0</td><td id="tco-y5-total">$0</td><td id="tco-y5-cum">$0</td></tr>
+        <tr class="summary-row"><td>Total</td><td id="tco-total-capex">$0</td><td id="tco-total-opex">$0</td><td id="tco-total-all">$0</td><td id="tco-total-cum">$0</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Cost Distribution</h2>
+      <div class="chart-container-sm"><canvas id="tcoPieChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>CAPEX + OPEX — Year-over-Year Stacked Bar</h2>
+    <div class="chart-container"><canvas id="tcoStackedChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>VCF vs Traditional — Cumulative TCO Comparison</h2>
+    <div class="chart-container"><canvas id="tcoComparisonChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ====== FOOTER ====== -->
+<div style="text-align:center;padding:20px;font-size:11px;color:#999;border-top:1px solid var(--border);margin-top:20px;">
+  VMware Cloud Foundation 9.0 — Private Cloud Dashboard &bull; Based on VCF 9.0 Design Guide (Broadcom TechDocs) &bull; v1.0
+</div>
+
+</div><!-- /.container -->
+
+<script>
+// ==============================================================
+//  GLOBAL STATE
+// ==============================================================
+let chartInstances = {};
+
+// ==============================================================
+//  TAB SWITCHING
+// ==============================================================
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  document.querySelector(`.tab-btn[onclick*="${tabId}"]`).classList.add('active');
+  // Render charts when tab shown (Chart.js needs visible container)
+  setTimeout(() => renderTabCharts(tabId), 100);
+}
+
+function switchSubTab(tab, sub) {
+  const parent = document.getElementById('tab-' + tab);
+  parent.querySelectorAll('.sub-tab-panel').forEach(p => p.classList.remove('active'));
+  parent.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelector('#' + tab + '-' + sub).classList.add('active');
+  parent.querySelector(`.sub-tab-btn[onclick*="'${sub}'"]`).classList.add('active');
+}
+
+// ==============================================================
+//  NUMBER FORMATTING
+// ==============================================================
+const fmt = (n) => '$' + Number(n).toLocaleString('en-US', {maximumFractionDigits:0});
+const fmt1 = (n) => Number(n).toLocaleString('en-US', {maximumFractionDigits:1});
+
+// ==============================================================
+//  INPUT CALCULATIONS
+// ==============================================================
+function calcMgmt() {
+  const hosts = parseInt(document.getElementById('mgmt-hosts').value) || 4;
+  const vcpu = parseInt(document.getElementById('mgmt-vcpu').value) || 32;
+  const ram = parseInt(document.getElementById('mgmt-ram').value) || 512;
+  const vsan = parseFloat(document.getElementById('mgmt-vsan').value) || 7680;
+  document.getElementById('mgmt-total-vcpu').textContent = hosts * vcpu;
+  document.getElementById('mgmt-total-ram').textContent = hosts * ram;
+  document.getElementById('mgmt-total-vsan').textContent = ((hosts * vsan) / 1024).toFixed(1);
+  document.getElementById('mgmt-recommend').textContent = hosts >= 3 ? hosts : 4;
+}
+
+function calcAllInputs() {
+  calcMgmt();
+  // Workload auto-calc
+  const wlDomains = parseInt(document.getElementById('wl-domains').value) || 2;
+  const wlClusters = parseInt(document.getElementById('wl-clusters').value) || 2;
+  const wlHosts = parseInt(document.getElementById('wl-hosts').value) || 4;
+  const wlVcpu = parseInt(document.getElementById('wl-vcpu').value) || 56;
+  const wlRam = parseInt(document.getElementById('wl-ram').value) || 1024;
+  const wlDensity = parseInt(document.getElementById('wl-density').value) || 30;
+  const totalWLHosts = wlDomains * wlClusters * wlHosts;
+  document.getElementById('wl-total-hosts').textContent = totalWLHosts;
+  document.getElementById('wl-total-vcpu').textContent = totalWLHosts * wlVcpu;
+  document.getElementById('wl-total-ram').textContent = totalWLHosts * wlRam;
+  document.getElementById('wl-total-vms').textContent = totalWLHosts * wlDensity;
+  document.getElementById('wl-total-vms-oc').textContent = totalWLHosts * wlDensity * 2;
+
+  // Storage auto-calc
+  const stHosts = totalWLHosts + (parseInt(document.getElementById('mgmt-hosts').value) || 4);
+  const stCap = parseFloat(document.getElementById('st-vsan-cap').value) || 15;
+  const ftt = parseInt(document.getElementById('st-ftt').value) || 1;
+  const dedup = document.getElementById('st-dedup').value === 'yes';
+  const raw = stHosts * stCap;
+  const usable = raw / (ftt + 1);
+  const effective = dedup ? usable * 2.5 : usable;
+  const nfs = parseFloat(document.getElementById('st-nfs-cap').value) || 0;
+  const backup = parseFloat(document.getElementById('st-backup').value) || 0;
+  document.getElementById('st-raw').textContent = fmt1(raw);
+  document.getElementById('st-usable').textContent = fmt1(usable);
+  document.getElementById('st-effective').textContent = fmt1(effective);
+  document.getElementById('st-total').textContent = fmt1(effective + nfs + backup);
+
+  // Prerequisites progress
+  const checks = document.querySelectorAll('#input-prereq input[type="checkbox"]');
+  const checked = Array.from(checks).filter(c => c.checked).length;
+  const pct = Math.round((checked / checks.length) * 100);
+  document.getElementById('prereq-progress').style.width = pct + '%';
+  document.getElementById('prereq-count').textContent = checked + '/' + checks.length;
+}
+
+// Auto-calc on input changes
+document.addEventListener('input', function(e) {
+  if (e.target.closest('#tab-input')) calcAllInputs();
+});
+
+// ==============================================================
+//  CAPEX CALCULATIONS
+// ==============================================================
+function calcCAPEX() {
+  const mgmtHosts = parseInt(document.getElementById('mgmt-hosts').value) || 4;
+  const wlDomains = parseInt(document.getElementById('wl-domains').value) || 2;
+  const wlClusters = parseInt(document.getElementById('wl-clusters').value) || 2;
+  const wlHosts = parseInt(document.getElementById('wl-hosts').value) || 4;
+  const totalHosts = mgmtHosts + (wlDomains * wlClusters * wlHosts);
+  const serverPrice = parseFloat(document.getElementById('hw-price').value) || 35000;
+  const torCount = parseInt(document.getElementById('hw-tor-count').value) || 4;
+  const torPrice = parseFloat(document.getElementById('hw-tor-price').value) || 25000;
+  const spineCount = parseInt(document.getElementById('hw-spine-count').value) || 2;
+  const spinePrice = parseFloat(document.getElementById('hw-spine-price').value) || 45000;
+
+  // Day 0
+  const srvCost = totalHosts * serverPrice;
+  const torCost = torCount * torPrice;
+  const spineCost = spineCount * spinePrice;
+  const cableCost = 15000;
+  const rackCost = 24000;
+  const upsCost = 35000;
+  const day0 = srvCost + torCost + spineCost + cableCost + rackCost + upsCost;
+
+  document.getElementById('d0-srv-qty').textContent = totalHosts;
+  document.getElementById('d0-srv-unit').textContent = fmt(serverPrice);
+  document.getElementById('d0-srv-total').textContent = fmt(srvCost);
+  document.getElementById('d0-tor-qty').textContent = torCount;
+  document.getElementById('d0-tor-unit').textContent = fmt(torPrice);
+  document.getElementById('d0-tor-total').textContent = fmt(torCost);
+  document.getElementById('d0-spine-qty').textContent = spineCount;
+  document.getElementById('d0-spine-unit').textContent = fmt(spinePrice);
+  document.getElementById('d0-spine-total').textContent = fmt(spineCost);
+  document.getElementById('d0-cable-total').textContent = fmt(cableCost);
+  document.getElementById('d0-rack-total').textContent = fmt(rackCost);
+  document.getElementById('d0-ups-total').textContent = fmt(upsCost);
+  document.getElementById('d0-subtotal').textContent = fmt(day0);
+
+  // Day 1
+  const totalCores = totalHosts * (parseInt(document.getElementById('hw-sockets').value || 2) * parseInt(document.getElementById('hw-cores').value || 32));
+  const licCost = totalCores * 350;
+  const psCost = 12 * 15000;
+  const trCost = 25000;
+  const day1 = licCost + psCost + trCost;
+
+  document.getElementById('d1-lic-qty').textContent = totalCores;
+  document.getElementById('d1-lic-unit').textContent = '$350';
+  document.getElementById('d1-lic-total').textContent = fmt(licCost);
+  document.getElementById('d1-ps-total').textContent = fmt(psCost);
+  document.getElementById('d1-tr-total').textContent = fmt(trCost);
+  document.getElementById('d1-subtotal').textContent = fmt(day1);
+
+  // Day 2
+  const sns = licCost * 0.25;
+  const warranty = totalHosts * serverPrice * 0.08;
+  const expansion = totalHosts * serverPrice * 0.1;
+  const day2 = sns + warranty + expansion;
+  document.getElementById('d2-sns').textContent = fmt(sns);
+  document.getElementById('d2-warranty').textContent = fmt(warranty);
+  document.getElementById('d2-expansion').textContent = fmt(expansion);
+  document.getElementById('d2-subtotal').textContent = fmt(day2);
+
+  // Metrics
+  const total = day0 + day1 + day2;
+  document.getElementById('capex-total-day0').textContent = fmt(day0);
+  document.getElementById('capex-total-day1').textContent = fmt(day1);
+  document.getElementById('capex-total-day2').textContent = fmt(day2);
+  document.getElementById('capex-grand-total').textContent = fmt(total);
+
+  return { day0, day1, day2, total, totalHosts, serverPrice, licCost, sns, warranty };
+}
+
+// ==============================================================
+//  OPEX CALCULATIONS
+// ==============================================================
+function calcOPEX() {
+  const hosts = parseInt(document.getElementById('opex-hosts').value) || 20;
+  const pue = parseFloat(document.getElementById('opex-pue').value) || 1.6;
+  const kwh = parseFloat(document.getElementById('opex-kwh').value) || 0.12;
+  const snsPct = parseFloat(document.getElementById('opex-sns').value) || 25;
+  const hwMaintPct = parseFloat(document.getElementById('opex-hw-maint').value) || 8;
+
+  // Power
+  const wattLoad = 900;
+  const annualKwh = hosts * wattLoad * 24 * 365 / 1000;
+  const pwrHosts = annualKwh * kwh;
+  const pwrCool = pwrHosts * (pue - 1);
+  const pwrTotal = pwrHosts + pwrCool;
+  document.getElementById('opex-pwr-hosts').textContent = fmt(pwrHosts);
+  document.getElementById('opex-pwr-cool').textContent = fmt(pwrCool);
+  document.getElementById('opex-pwr-total').textContent = fmt(pwrTotal);
+
+  // Staffing
+  const staffRoles = [
+    {id:'ca', sal:120000}, {id:'vi', sal:95000}, {id:'sec', sal:110000},
+    {id:'dev', sal:105000}, {id:'plat', sal:115000}
+  ];
+  let staffTotal = 0;
+  let staffFte = 0;
+  staffRoles.forEach(r => {
+    const fte = parseInt(document.getElementById('staff-' + r.id).value) || 0;
+    const cost = fte * r.sal;
+    staffTotal += cost;
+    staffFte += fte;
+    document.getElementById('staff-' + r.id + '-total').textContent = fmt(cost);
+  });
+  document.getElementById('staff-total-fte').textContent = staffFte;
+  document.getElementById('staff-total-cost').textContent = fmt(staffTotal);
+
+  // Maintenance
+  const capex = calcCAPEX();
+  const snsAnnual = capex.licCost * (snsPct / 100);
+  const hwMaint = capex.totalHosts * capex.serverPrice * (hwMaintPct / 100);
+  document.getElementById('opex-sns-annual').textContent = fmt(snsAnnual);
+  document.getElementById('opex-hwm-annual').textContent = fmt(hwMaint);
+  const maintTotal = snsAnnual + hwMaint;
+  document.getElementById('opex-maint-total').textContent = fmt(maintTotal);
+
+  // Facility
+  const rackMonthly = parseFloat(document.getElementById('opex-rack-monthly').value) || 1200;
+  const numRacks = parseInt(document.getElementById('opex-num-racks').value) || 3;
+  const training = parseFloat(document.getElementById('opex-training').value) || 15000;
+  const rackAnnual = rackMonthly * numRacks * 12;
+  document.getElementById('opex-rack-annual').textContent = fmt(rackAnnual);
+  document.getElementById('opex-train-annual').textContent = fmt(training);
+  const facTotal = rackAnnual + training;
+  document.getElementById('opex-fac-total').textContent = fmt(facTotal);
+
+  // Total OPEX
+  const total = pwrTotal + staffTotal + maintTotal + facTotal;
+  document.getElementById('opex-annual').textContent = fmt(total);
+  document.getElementById('opex-5year').textContent = fmt(total * 5);
+
+  return { pwrTotal, staffTotal, maintTotal, facTotal, total, snsAnnual, hwMaint };
+}
+
+// ==============================================================
+//  TCO CALCULATIONS
+// ==============================================================
+function calcTCO() {
+  const capex = calcCAPEX();
+  const opex = calcOPEX();
+
+  // Year 1: CAPEX (all) + OPEX
+  const y1 = capex.total + opex.total;
+  // Years 2-5: OPEX + Day2 recurring (SNS + warranty + expansion)
+  const day2Recurring = capex.sns + capex.warranty;
+  const y2to5 = opex.total + day2Recurring;
+  const total5yr = y1 + y2to5 * 4;
+
+  document.getElementById('tco-y1-capex').textContent = fmt(capex.total);
+  document.getElementById('tco-y1-opex').textContent = fmt(opex.total);
+  document.getElementById('tco-y1-total').textContent = fmt(y1);
+  document.getElementById('tco-y1-cum').textContent = fmt(y1);
+
+  let cum = y1;
+  for (let i = 2; i <= 5; i++) {
+    const yi = y2to5;
+    cum += yi;
+    document.getElementById('tco-y' + i + '-capex').textContent = '$0';
+    document.getElementById('tco-y' + i + '-opex').textContent = fmt(yi);
+    document.getElementById('tco-y' + i + '-total').textContent = fmt(yi);
+    document.getElementById('tco-y' + i + '-cum').textContent = fmt(cum);
+  }
+
+  document.getElementById('tco-total-capex').textContent = fmt(capex.total);
+  document.getElementById('tco-total-opex').textContent = fmt(opex.total + y2to5 * 4);
+  document.getElementById('tco-total-all').textContent = fmt(total5yr);
+  document.getElementById('tco-total-cum').textContent = fmt(total5yr);
+  document.getElementById('tco-5y-total').textContent = fmt(total5yr);
+
+  // Cost per VM
+  const totalVMs = parseInt(document.getElementById('wl-total-vms').textContent) || 480;
+  const perVM = totalVMs > 0 ? total5yr / totalVMs : 0;
+  document.getElementById('tco-per-vm').textContent = fmt(perVM);
+  document.getElementById('tco-annual').textContent = fmt(total5yr / 5);
+
+  // Traditional comparison
+  const tradAnnual = 2090000;
+  const vcfAnnualAvg = total5yr / 5;
+  const savings5yr = (tradAnnual * 5) - total5yr;
+  document.getElementById('tco-vs-trad').textContent = fmt(savings5yr);
+
+  return { y1, y2to5, total5yr, cum, tradAnnual, vcfAnnualAvg, savings5yr, totalVMs };
+}
+
+// ==============================================================
+//  ROI CALCULATIONS
+// ==============================================================
+function calcROI() {
+  const tco = calcTCO();
+  const tradAnnual = 2090000;
+  const vcfAnnual = tco.y2to5;
+
+  // Year-by-year
+  const years = [];
+  let cumSavings = 0;
+  let paybackYear = -1;
+  const initialInv = parseFloat(document.getElementById('capex-grand-total').textContent.replace(/[$,]/g,'')) || 1500000;
+
+  for (let y = 1; y <= 5; y++) {
+    const vcfCost = y === 1 ? tco.y1 : vcfAnnual;
+    const tradCost = tradAnnual;
+    const saving = tradCost - vcfCost;
+    cumSavings += saving;
+    years.push({ y, vcfCost, tradCost, saving, cumSavings });
+
+    document.getElementById('fyn' + y + '-vcf').textContent = fmt(vcfCost);
+    document.getElementById('fyn' + y + '-trad').textContent = fmt(tradCost);
+    document.getElementById('fyn' + y + '-sav').textContent = fmt(saving);
+    document.getElementById('fyn' + y + '-cum').textContent = fmt(cumSavings);
+
+    if (paybackYear < 0 && cumSavings >= initialInv) paybackYear = y;
+  }
+
+  // Payback period
+  const payback = paybackYear > 0 ? paybackYear + ' yrs' : '>5 yrs';
+  document.getElementById('roi-payback').textContent = payback;
+
+  // NPV (discount rate 10%)
+  const rate = 0.10;
+  let npv = -initialInv;
+  let irrGuess = 0.15;
+  for (let y = 1; y <= 5; y++) {
+    const cf = tradAnnual - (y === 1 ? tco.y1 : vcfAnnual);
+    npv += cf / Math.pow(1 + rate, y);
+  }
+  document.getElementById('roi-npv').textContent = fmt(npv);
+  document.getElementById('roi-5y-savings').textContent = fmt(cumSavings);
+
+  // Simple IRR approximation
+  const irr = (cumSavings / initialInv / 5) * 100;
+  document.getElementById('roi-irr').textContent = irr.toFixed(1) + '%';
+
+  // TCO comparison table
+  const tradItems = [350000, 180000, 1200000, 180000, 60000, 120000];
+  const vcfItems = [250000, 120000, 745000, 120000, 55000, 80000];
+  const labels = ['Hardware','Software Lic','Staffing','Power/Cool','Facility','Maintenance'];
+  const savingsItems = tradItems.map((t,i) => t - vcfItems[i]);
+  labels.forEach((l,i) => {
+    document.getElementById('tco-trad-' + l.toLowerCase().replace(/[^a-z]/g,'')).textContent = fmt(tradItems[i]);
+    document.getElementById('tco-vcf-' + l.toLowerCase().replace(/[^a-z]/g,'')).textContent = fmt(vcfItems[i]);
+  });
+
+  return { years, npv, irr, cumSavings, initialInv };
+}
+
+// ==============================================================
+//  CHART RENDERING
+// ==============================================================
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function renderTabCharts(tabId) {
+  switch(tabId) {
+    case 'capex': renderCAPEXCharts(); break;
+    case 'opex': renderOPEXCharts(); break;
+    case 'roi': renderROIChart(); break;
+    case 'tco': renderTCOCharts(); break;
+  }
+}
+
+function renderCAPEXCharts() {
+  destroyChart('capexChart');
+  const d0 = parseFloat(document.getElementById('capex-total-day0').textContent.replace(/[$,]/g,'')) || 964000;
+  const d1 = parseFloat(document.getElementById('capex-total-day1').textContent.replace(/[$,]/g,'')) || 429000;
+  const d2 = parseFloat(document.getElementById('capex-total-day2').textContent.replace(/[$,]/g,'')) || 171000;
+  const ctx = document.getElementById('capexChart').getContext('2d');
+  chartInstances.capexChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Day 0 - Planning & Hardware', 'Day 1 - Deployment & Licensing', 'Day 2 - Expansion & Warranty'],
+      datasets: [{
+        label: 'CAPEX (USD)',
+        data: [d0, d1, d2],
+        backgroundColor: ['#1565C0', '#2E7D32', '#FB8C00'],
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K' } } }
+    }
+  });
+}
+
+function renderOPEXCharts() {
+  destroyChart('opexPieChart');
+  destroyChart('opexYearChart');
+  const opex = calcOPEX();
+  const ctx1 = document.getElementById('opexPieChart').getContext('2d');
+  chartInstances.opexPieChart = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: ['Power & Cooling', 'Staffing', 'Maintenance', 'Facility & Other'],
+      datasets: [{
+        data: [opex.pwrTotal, opex.staffTotal, opex.maintTotal, opex.facTotal],
+        backgroundColor: ['#1565C0','#2E7D32','#FB8C00','#7B1FA2']
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom', labels:{font:{size:11}} } }
+    }
+  });
+  const ctx2 = document.getElementById('opexYearChart').getContext('2d');
+  chartInstances.opexYearChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['Year 1','Year 2','Year 3','Year 4','Year 5'],
+      datasets: [{
+        label: 'OPEX (USD)',
+        data: Array(5).fill(opex.total),
+        backgroundColor: '#1565C0',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display:false } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K' } } }
+    }
+  });
+}
+
+function renderROIChart() {
+  destroyChart('roiChart');
+  const roi = calcROI();
+  const yLabels = roi.years.map(y => 'Year ' + y.y);
+  const tradData = roi.years.map(y => y.tradCost);
+  const vcfData = roi.years.map(y => y.vcfCost);
+  const savData = roi.years.map(y => y.cumSavings);
+  const ctx = document.getElementById('roiChart').getContext('2d');
+  chartInstances.roiChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: yLabels,
+      datasets: [
+        { label: 'Traditional Cost', data: tradData, borderColor: '#E53935', borderDash: [5,5], fill: false, tension: 0.3, pointRadius: 4 },
+        { label: 'VCF 9.0 Cost', data: vcfData, borderColor: '#1565C0', fill: false, tension: 0.3, pointRadius: 4 },
+        { label: 'Cumulative Savings', data: savData, borderColor: '#2E7D32', fill: true, backgroundColor: 'rgba(46,125,50,0.1)', tension: 0.3, pointRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom', labels:{font:{size:11}} } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K' } } }
+    }
+  });
+}
+
+function renderTCOCharts() {
+  destroyChart('tcoPieChart');
+  destroyChart('tcoStackedChart');
+  destroyChart('tcoComparisonChart');
+
+  const tco = calcTCO();
+  const capexTotal = parseFloat(document.getElementById('tco-total-capex').textContent.replace(/[$,]/g,'')) || 1500000;
+  const opexTotal = parseFloat(document.getElementById('tco-total-opex').textContent.replace(/[$,]/g,'')) || 5000000;
+
+  // Pie
+  const ctx1 = document.getElementById('tcoPieChart').getContext('2d');
+  chartInstances.tcoPieChart = new Chart(ctx1, {
+    type: 'pie',
+    data: {
+      labels: ['CAPEX (Hardware + Licensing)', 'OPEX (Power + Staff + Maint + Facility)'],
+      datasets: [{ data: [capexTotal, opexTotal], backgroundColor: ['#1565C0', '#FB8C00'] }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom', labels:{font:{size:11}} } }
+    }
+  });
+
+  // Stacked bar
+  const ctx2 = document.getElementById('tcoStackedChart').getContext('2d');
+  const y1capex = parseFloat(document.getElementById('tco-y1-capex').textContent.replace(/[$,]/g,'')) || 0;
+  const y2capex = parseFloat(document.getElementById('tco-y2-capex').textContent.replace(/[$,]/g,'')) || 0;
+  const y3capex = parseFloat(document.getElementById('tco-y3-capex').textContent.replace(/[$,]/g,'')) || 0;
+  const y4capex = parseFloat(document.getElementById('tco-y4-capex').textContent.replace(/[$,]/g,'')) || 0;
+  const y5capex = parseFloat(document.getElementById('tco-y5-capex').textContent.replace(/[$,]/g,'')) || 0;
+  const y1opex = parseFloat(document.getElementById('tco-y1-opex').textContent.replace(/[$,]/g,'')) || 0;
+  const y2opex = parseFloat(document.getElementById('tco-y2-opex').textContent.replace(/[$,]/g,'')) || 0;
+  const y3opex = parseFloat(document.getElementById('tco-y3-opex').textContent.replace(/[$,]/g,'')) || 0;
+  const y4opex = parseFloat(document.getElementById('tco-y4-opex').textContent.replace(/[$,]/g,'')) || 0;
+  const y5opex = parseFloat(document.getElementById('tco-y5-opex').textContent.replace(/[$,]/g,'')) || 0;
+  chartInstances.tcoStackedChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['Year 1','Year 2','Year 3','Year 4','Year 5'],
+      datasets: [
+        { label: 'CAPEX', data: [y1capex, y2capex, y3capex, y4capex, y5capex], backgroundColor: '#1565C0', borderRadius: 2 },
+        { label: 'OPEX', data: [y1opex, y2opex, y3opex, y4opex, y5opex], backgroundColor: '#FB8C00', borderRadius: 2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K' } }
+      },
+      plugins: { legend: { position:'bottom', labels:{font:{size:11}} } }
+    }
+  });
+
+  // Comparison
+  const ctx3 = document.getElementById('tcoComparisonChart').getContext('2d');
+  const trad5yr = 2090000 * 5;
+  chartInstances.tcoComparisonChart = new Chart(ctx3, {
+    type: 'line',
+    data: {
+      labels: ['Year 1','Year 2','Year 3','Year 4','Year 5'],
+      datasets: [
+        { label: 'VCF 9.0 Cumulative TCO',
+          data: [
+            parseFloat(document.getElementById('tco-y1-cum').textContent.replace(/[$,]/g,'')),
+            parseFloat(document.getElementById('tco-y2-cum').textContent.replace(/[$,]/g,'')),
+            parseFloat(document.getElementById('tco-y3-cum').textContent.replace(/[$,]/g,'')),
+            parseFloat(document.getElementById('tco-y4-cum').textContent.replace(/[$,]/g,'')),
+            parseFloat(document.getElementById('tco-y5-cum').textContent.replace(/[$,]/g,''))
+          ],
+          borderColor: '#2E7D32', fill: false, tension: 0.3, pointRadius: 4
+        },
+        { label: 'Traditional Cumulative TCO',
+          data: [2090000, 4180000, 6270000, 8360000, 10450000],
+          borderColor: '#E53935', borderDash: [5,5], fill: false, tension: 0.3, pointRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom', labels:{font:{size:11}} } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K' } } }
+    }
+  });
+}
+
+// ==============================================================
+//  LOCAL STORAGE SAVE / LOAD
+// ==============================================================
+function saveAllData() {
+  const data = {};
+  document.querySelectorAll('[data-save]').forEach(el => {
+    const id = el.id;
+    if (!id) return;
+    if (el.type === 'checkbox') data[id] = el.checked;
+    else if (el.type === 'number' || el.tagName === 'SELECT') data[id] = el.value;
+    else data[id] = el.value;
+  });
+  localStorage.setItem('vcf9-dashboard', JSON.stringify(data));
+  alert('All input data saved to LocalStorage.');
+}
+
+function loadAllData() {
+  const raw = localStorage.getItem('vcf9-dashboard');
+  if (!raw) { alert('No saved data found.'); return; }
+  const data = JSON.parse(raw);
+  Object.keys(data).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') el.checked = data[id];
+    else el.value = data[id];
+  });
+  calcAllInputs();
+  alert('Data loaded from LocalStorage.');
+}
+
+// ==============================================================
+//  INIT
+// ==============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  calcAllInputs();
+  // Pre-populate OPEX hosts from total
+  const mgmtHosts = parseInt(document.getElementById('mgmt-hosts').value) || 4;
+  const wlDomains = parseInt(document.getElementById('wl-domains').value) || 2;
+  const wlClusters = parseInt(document.getElementById('wl-clusters').value) || 2;
+  const wlHosts = parseInt(document.getElementById('wl-hosts').value) || 4;
+  document.getElementById('opex-hosts').value = mgmtHosts + (wlDomains * wlClusters * wlHosts);
+
+  // Auto-sync on relevant input changes
+  document.addEventListener('input', function() {
+    const mgmt = parseInt(document.getElementById('mgmt-hosts').value) || 4;
+    const wlD = parseInt(document.getElementById('wl-domains').value) || 2;
+    const wlC = parseInt(document.getElementById('wl-clusters').value) || 2;
+    const wlH = parseInt(document.getElementById('wl-hosts').value) || 4;
+    document.getElementById('opex-hosts').value = mgmt + (wlD * wlC * wlH);
+    calcOPEX();
+    calcTCO();
+    calcROI();
+  });
+
+  // TCO % of OPEX
+  setTimeout(() => {
+    const total = parseFloat(document.getElementById('tco-total-all').textContent.replace(/[$,]/g,'')) || 1;
+    const opexTot = parseFloat(document.getElementById('tco-total-opex').textContent.replace(/[$,]/g,'')) || 0;
+    document.getElementById('opex-pct-of-tco').textContent = ((opexTot / total) * 100).toFixed(0) + '%';
+  }, 500);
+});
+</script>
+</body>
+</html>
