@@ -15,7 +15,7 @@ CVE Official Website https://www.cve.org, https://nvd.nist.gov/ : Cơ sở dữ 
 lỗi phần mềm quốc gia của Mỹ. 
 Hãy tìm cho tôi các vá lỗi, các đánh giá điểm số xác định mối nguy hại có thể với hệ thống của tôi.
 Hãy thay toàn bộ lịch về 15:30 PM hàng ngày, 
-hãy thực thi đoạn prompt trên và lưu ra file Documents\itaudit\[ngày hiện thời]_cve.md.
+hãy thực thi đoạn prompt trên và lưu ra file Documents\\itaudit\\[ngày hiện thời]_cve.md.
 
 ---
 
