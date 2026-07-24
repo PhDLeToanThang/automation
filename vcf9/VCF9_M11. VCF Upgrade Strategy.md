@@ -78,27 +78,51 @@ Nếu bạn muốn tiếp tục lên kế hoạch, hãy cho tôi biết:
 
 
 [1] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2025/11/20/upgrading-vmware-cloud-foundation-5-2-to-9-0-webinar-takeaways/)
+
 [2] [https://techdocs.broadcom.com](https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-5-2-and-earlier/5-2/vmware-cloud-foundation-lifecycle-management/upgrading-cloud-foundation-lifecycle.html)
+
 [3] [https://robusta.vn](https://robusta.vn/vi/chuong-trinh-dao-tao/vmware/data-center-cloud-management/vmware-cloud-foundation-management-and-operations-v4.x)
+
 [4] [https://www.youtube.com](https://www.youtube.com/watch?v=-_gkL4PyQzE&t=11)
+
 [5] [https://www.viquarcloud.com](https://www.viquarcloud.com/post/upgrading-vmware-cloud-foundation-4-5-2-to-5-2-1)
+
 [6] [https://www.vrcloud24x7.com](https://www.vrcloud24x7.com/2026/05/upgrading-vmware-cloud-foundation-52x.html)
+
 [7] [https://www.youtube.com](https://www.youtube.com/watch?v=D89s1ODX9tY&t=10)
+
 [8] [https://knowledge.broadcom.com](https://knowledge.broadcom.com/external/article/327207/vmware-cloud-foundation-upgrade-bundle.html)
+
 [9] [https://knowledge.broadcom.com](https://knowledge.broadcom.com/external/article/405275)
+
 [10] [https://knowledge.broadcom.com](https://knowledge.broadcom.com/external/article/405275)
+
 [11] [https://gibsonvirt.com](https://gibsonvirt.com/2025/06/18/vcf-5-2-x-to-9-upgrade-part-1-management-domain/)
+
 [12] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2025/12/18/upgrading-vmware-cloud-foundation-5-2-to-9-0-the-top-10-questions-answered/)
+
 [13] [https://www.youtube.com](https://www.youtube.com/watch?v=aRTyZJZREbY&t=8)
+
 [14] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2025/09/25/how-to-upgrade-to-vmware-cloud-foundation-9-0/)
+
 [15] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2026/06/18/how-to-upgrade-to-vmware-cloud-foundation-9-1/)
+
 [16] [https://theaistack.blog](https://theaistack.blog/2026/03/17/planning-a-vmware-cloud-foundation-9-0-upgrade-start-here/)
+
 [17] [https://arunnukula.com](https://arunnukula.com/blog/upgrade-paths-to-vcf-9-0-x-how-do-we-get-there-from-here)
+
 [18] [https://techdocs.broadcom.com](https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-5-2-and-earlier/5-2/vcf-release-notes/vmware-cloud-foundation-524-release-notes.html)
+
 [19] [https://knowledge.broadcom.com](https://knowledge.broadcom.com/external/article/405275)
+
 [20] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2026/06/05/modernizing-infrastructure-vmware-cloud-foundation-5-2-x-to-9-1-upgrade-guide/)
+
 [21] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2025/04/08/using-vsphere-supervisor-heres-a-comprehensive-guide-to-upgrading-to-vcf-5-2-1/)
+
 [22] [https://www.aroracloud.com](https://www.aroracloud.com/blog/streamlining-the-upgrade-and-patch-process-for-vcf-5-2-workload-domainsa-common-challenge-in-managing-private-cloud-infrastructure-is-coordinating-maintenance-windows-with-application-owners-in-a-way/)
+
 [23] [https://blogs.vmware.com](https://blogs.vmware.com/cloud-foundation/2025/02/06/how-to-upgrade-vmware-cloud-foundation-and-import-vmware-vsphere-clusters-webinar-highlights/)
+
 [24] [https://www.youtube.com](https://www.youtube.com/watch?v=j-4E8WDyRlU&t=701)
+
 [25] [https://knowledge.broadcom.com](https://knowledge.broadcom.com/external/article/390634/update-sequence-for-vcf-90-and-compatibl.html)
