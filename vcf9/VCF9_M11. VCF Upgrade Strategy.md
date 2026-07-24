@@ -31,10 +31,11 @@ Dưới đây là phân tích chi tiết dựa trên tài liệu kỹ thuật t�
 ------------------------------
 ## II. PHÂN TÍCH CHI TIẾT CÁC BƯỚC NÂNG CẤP LỘ TRÌNH KHẢ THI (4.0 $\rightarrow$ 4.5 $\rightarrow$ 5.2 $\rightarrow$ 9.x)
 
+```ascii
 ========================================================================================
                       SƠ ĐỒ LỘ TRÌNH NÂNG CẤP VCF KHẢ THI (ASCII)
 ========================================================================================
-```ascii
+
  [ VCF 4.0 ]  ---( Gốc: vSphere 7.0 + NSX-T )
       |
       | 
