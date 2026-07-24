@@ -8,6 +8,9 @@ Không thể nâng cấp thẳng (Direct Upgrade) từ VCF 4.0 lên VCF 9.x, hà
 Bạn bắt buộc phải thực hiện theo lộ trình nâng cấp cuốn chiếu (Multi-step Upgrade) hoặc cài đặt mới hoàn toàn. [1, 2] 
 Dưới đây là phân tích chi tiết dựa trên tài liệu kỹ thuật từ Broadcom/VMware cập nhật đến năm 2026, bao gồm bảng so sánh, lý giải tính khả thi và quy trình thực hiện an toàn.
 ------------------------------
+
+<img width="1555" height="622" alt="image" src="https://github.com/user-attachments/assets/7a1481cd-6aa3-4278-8f40-f3ad3edcaa22" />
+
 ## I. BẢNG PHÂN TÍCH KHẢ THI & SO SÁNH PHIÊN BẢN
 Để cấu trúc lại hệ thống một cách trực quan, dưới đây là bảng so sánh kiến trúc và phân tích lộ trình đi từ VCF 4.0. [2, 3] 
 
