@@ -31,6 +31,38 @@ Dưới đây là phân tích chi tiết dựa trên tài liệu kỹ thuật t�
 ------------------------------
 ## II. PHÂN TÍCH CHI TIẾT CÁC BƯỚC NÂNG CẤP LỘ TRÌNH KHẢ THI (4.0 $\rightarrow$ 4.5 $\rightarrow$ 5.2 $\rightarrow$ 9.x)
 
+========================================================================================
+                      SƠ ĐỒ LỘ TRÌNH NÂNG CẤP VCF KHẢ THI (ASCII)
+========================================================================================
+```ascii
+ [ VCF 4.0 ]  ---( Gốc: vSphere 7.0 + NSX-T )
+      |
+      | 
+      |  [ BƯỚC 1: Nâng cấp tuần tự / Sequential Upgrade ]
+      v  - Tải bổ sung các gói Bundle trung gian trên SDDC Manager.
+      |  - Cập nhật SDDC Manager nội bộ, vCenter và ESXi Hosts.
+      |
+ [ VCF 4.5.x ] --( Mốc trung gian tối thiểu để kích hoạt Skip-level )
+      |
+      |
+      |  [ BƯỚC 2: Nâng cấp bỏ bước / Skip-level Upgrade ]
+      v  - Chạy công cụ quét lỗi cấu hình VCF-VDT.
+      |  - Chuyển đổi quản lý Host từ VUM sang vLCM Image Mode (Bắt buộc).
+      |  - Nâng cấp lõi: SDDC Manager 5.2 -> NSX 4.x -> vCenter 8.0 -> ESXi 8.0.
+      |
+ [ VCF 5.2 ]  ---( Nền tảng hội tụ / Convergence Platform )
+      |
+      |
+      |  [ BƯỚC 3: Hiện đại hóa kiến trúc / Primary Path Upgrade ]
+      v  - Nâng cấp SDDC Manager lên lõi 9.x.
+      |  - Áp dụng vCenter RDU (Reduced Downtime Upgrade) qua IP tạm thời.
+      |  - Triển khai VCF Operations 9.x & Fleet Management Appliance.
+      |
+ [ VCF 9.x ]  ---( Đích đến: vSphere 9.0 + Fleet Quản lý tập trung )
+
+========================================================================================
+```
+
 ### Bước 1: Nâng cấp tuần tự từ VCF 4.0 lên VCF 4.5.x (Chuẩn bị bệ phóng)
 Vì không thể nhảy cóc từ 4.0 lên 5.2, bạn cần thực hiện nâng cấp các bundle trong SDDC Manager: [2, 8] 
 
