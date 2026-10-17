@@ -113,3 +113,12 @@ Việc làm chủ NSX đòi hỏi sự kết hợp giữa kiến thức hạ t�
 2. **Khai thác triệt để Layer 7:**  Đừng dừng lại ở việc chặn Port/IP. Hãy sử dụng AppID để ngăn chặn các ứng dụng "đi lậu" trên các cổng dịch vụ tiêu chuẩn.  
 3. **Giám sát chặt chẽ Alarms:**  Đặc biệt là các cảnh báo về CPU Oversubscription của IDS/IPS và Malware Prevention để điều chỉnh tài nguyên kịp thời, tránh việc lưu lượng bị bypass mà không kiểm soát.
 4. NSX là một hệ sinh thái bảo mật toàn diện. Hãy tiếp tục thực hành trên các môi trường Lab để thấu hiểu cách các chính sách được "hiện thực hóa" (realized) từ giao diện quản trị xuống từng vNIC của máy ảo.
+
+>>>Tham khảo các tài liệu sau: https://github.com/PhDLeToanThang/automation/blob/main/nsx-nv/deploy_LabsNSX4.md;
+https://github.com/PhDLeToanThang/automation/blob/main/nsx-nv/Dashboard_calcaultor_NSX.html; 
+https://github.com/PhDLeToanThang/automation/blob/main/nsx-nv/readme.md; 
+https://github.com/PhDLeToanThang/automation/blob/main/nsx-nv/vmware-nsx-4-0-ditamap.pdf;
+Hãy xây dựng cho tôi một file single-page HTML duy nhất chứa đầy đủ cấu trúc HTML, CSS (sử dụng thư viện Tailwind CSS qua CDN để giao diện hiện đại, bo tròn góc, responsive tốt trên mobile) và mã JavaScript xử lý tương tác dạng các Forms Input, Combo list box, check box và Các Tab Sheets gồm: Input Data,  Process: InSight Data, Output Data: CAPEX Sizing, OPEX calculator, TCO, ROI Analysis, PMI Tracker, SOW Estimator, ORKI RISK, KPI Operation; 
+NSX Topology; lưu vào C:\nsx-nv\dashboard\nsx-nv_v1.html
+
+--> https://atcom.vn/edu/hol-2026/VFF8/nsx-nv_v1.html
